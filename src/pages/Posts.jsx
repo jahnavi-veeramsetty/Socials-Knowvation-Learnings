@@ -235,6 +235,9 @@ const Posts = () => {
                 .posts-page {
                     padding: 40px;
                     font-family: 'Inter', sans-serif;
+                    background: #010D2C;
+                    min-height: 100vh;
+                    color: #ffffff;
                 }
 
                 .posts-header {
@@ -245,7 +248,7 @@ const Posts = () => {
                 }
 
                 .posts-header h1 {
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 32px;
                     font-weight: 800;
                     margin: 0;
@@ -264,10 +267,10 @@ const Posts = () => {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    background: white;
+                    background: #0a1936;
                     padding: 12px 20px;
                     border-radius: 14px;
-                    border: 1.5px solid #f1f5f9;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     flex: 1;
                     min-width: 300px;
                 }
@@ -278,6 +281,8 @@ const Posts = () => {
                     width: 100%;
                     font-size: 14px;
                     font-weight: 500;
+                    background: transparent;
+                    color: white;
                 }
 
                 .filters-group {
@@ -287,22 +292,23 @@ const Posts = () => {
                 }
 
                 .filter-select {
-                    background: white;
+                    background: #0a1936;
                     padding: 12px 16px;
                     border-radius: 14px;
-                    border: 1.5px solid #f1f5f9;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     font-size: 13px;
                     font-weight: 700;
-                    color: #475569;
+                    color: #cbd5e1;
                     outline: none;
                     cursor: pointer;
                 }
 
                 .view-toggle {
                     display: flex;
-                    background: #f1f5f9;
+                    background: #0a1936;
                     padding: 4px;
                     border-radius: 12px;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                 }
 
                 .toggle-btn {
@@ -316,9 +322,9 @@ const Posts = () => {
                 }
 
                 .toggle-btn.active {
-                    background: white;
-                    color: #002B72;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                    background: #002B72;
+                    color: white;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
                 }
 
                 .create-btn {

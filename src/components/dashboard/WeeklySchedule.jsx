@@ -22,7 +22,7 @@ const WeeklySchedule = ({ weekDays, today, getPostsForDate, brandColors, orgId }
                 .section-header h2 {
                     font-size: 20px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                     margin: 0;
                 }
                 .weekly-view {
@@ -31,9 +31,9 @@ const WeeklySchedule = ({ weekDays, today, getPostsForDate, brandColors, orgId }
                     gap: 16px;
                 }
                 .week-day-card {
-                    background: white;
+                    background: #0a1936;
                     border-radius: 20px;
-                    border: 1px solid #e2e8f0;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                     min-height: 200px;
                     display: flex;
                     flex-direction: column;
@@ -41,26 +41,26 @@ const WeeklySchedule = ({ weekDays, today, getPostsForDate, brandColors, orgId }
                     transition: all 0.2s;
                 }
                 .week-day-card:hover {
-                    border-color: #cbd5e1;
-                    box-shadow: 0 10px 20px rgba(0, 43, 114, 0.04);
+                    border-color: rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
                 }
                 .day-header {
                     padding: 12px;
-                    background: #fbfcfd;
-                    border-bottom: 1px solid #f1f5f9;
+                    background: rgba(255, 255, 255, 0.02);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                     text-align: center;
                 }
                 .day-name {
                     font-size: 11px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                 }
                 .day-number {
                     font-size: 18px;
                     font-weight: 900;
-                    color: #002B72;
+                    color: #ffffff;
                     margin-top: 2px;
                 }
                 .day-number.is-today {

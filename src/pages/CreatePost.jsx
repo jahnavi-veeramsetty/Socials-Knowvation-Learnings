@@ -233,18 +233,19 @@ const CreatePost = () => {
         <div className="create-post-page">
             <style>{`
                 .create-post-page {
-                    background: #fff;
+                    background: #010D2C;
                     min-height: 100vh;
                     font-family: 'Inter', sans-serif;
                     display: flex;
                     flex-direction: column;
+                    color: #ffffff;
                 }
 
                 .editor-header {
                     position: sticky;
                     top: 0;
-                    background: white;
-                    border-bottom: 1px solid #eee;
+                    background: #0a1936;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                     padding: 16px 40px;
                     display: flex;
                     justify-content: space-between;
@@ -256,12 +257,17 @@ const CreatePost = () => {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    color: #64748b;
+                    color: #94a3b8;
                     font-weight: 600;
                     font-size: 14px;
                     cursor: pointer;
                     border: none;
                     background: none;
+                    transition: color 0.2s;
+                }
+                
+                .back-btn:hover {
+                    color: #ffffff;
                 }
 
                 .header-actions {
@@ -283,14 +289,25 @@ const CreatePost = () => {
                 }
 
                 .btn-secondary {
-                    background: #f8fafc;
-                    color: #64748b;
-                    border: 1.5px solid #e2e8f0;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #cbd5e1;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
+                }
+                
+                .btn-secondary:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
                 }
 
                 .btn-primary {
                     background: #002B72;
                     color: white;
+                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.3);
+                }
+                
+                .btn-primary:hover {
+                    background: #001f54;
+                    transform: translateY(-1px);
                 }
 
                 .editor-layout {
@@ -301,10 +318,10 @@ const CreatePost = () => {
                 }
 
                 .metadata-sidebar {
-                    border-right: 1px solid #eee;
+                    border-right: 1px solid rgba(255, 255, 255, 0.05);
                     padding: 32px;
                     overflow-y: auto;
-                    background: #fbfcfd;
+                    background: #0a1936;
                     display: flex;
                     flex-direction: column;
                     gap: 28px;
@@ -313,7 +330,7 @@ const CreatePost = () => {
                 .doc-editor {
                     padding: 40px;
                     overflow-y: auto;
-                    background: #f1f5f9;
+                    background: #010D2C;
                 }
 
                 .doc-container {
@@ -322,11 +339,12 @@ const CreatePost = () => {
                     display: flex;
                     flex-direction: column;
                     gap: 40px;
-                    background: white;
+                    background: #0a1936;
                     padding: 80px 100px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-                    border-radius: 2px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+                    border-radius: 4px;
                     min-height: 1000px;
+                    border: 1px solid rgba(255, 255, 255, 0.03);
                 }
 
                 .form-group {
@@ -336,11 +354,11 @@ const CreatePost = () => {
                 }
 
                 .sidebar-label {
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                     text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 1px;
                 }
 
                 .sidebar-select,
@@ -348,11 +366,19 @@ const CreatePost = () => {
                     width: 100%;
                     padding: 12px;
                     border-radius: 10px;
-                    border: 1.5px solid #e2e8f0;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     font-size: 14px;
                     font-weight: 600;
-                    background: white;
+                    background: rgba(255, 255, 255, 0.02);
+                    color: white;
                     outline: none;
+                    transition: all 0.2s;
+                }
+                
+                .sidebar-select:focus,
+                .sidebar-input:focus {
+                    border-color: #002B72;
+                    background: rgba(255, 255, 255, 0.05);
                 }
 
                 .platform-pills {
@@ -364,19 +390,21 @@ const CreatePost = () => {
                 .platform-pill {
                     padding: 10px;
                     border-radius: 10px;
-                    border: 1.5px solid #e2e8f0;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     font-size: 12px;
                     font-weight: 700;
                     text-align: center;
                     cursor: pointer;
                     transition: all 0.2s;
-                    background: white;
+                    background: rgba(255, 255, 255, 0.02);
+                    color: #64748b;
                 }
 
                 .platform-pill.active {
                     background: #002B72;
                     color: white;
                     border-color: #002B72;
+                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.2);
                 }
 
                 .doc-title-input {
@@ -384,9 +412,14 @@ const CreatePost = () => {
                     font-weight: 800;
                     border: none;
                     outline: none;
-                    color: #002B72;
+                    color: #ffffff;
                     width: 100%;
                     padding: 0;
+                    background: transparent;
+                }
+                
+                .doc-title-input::placeholder {
+                    color: rgba(255, 255, 255, 0.1);
                 }
 
                 .doc-textarea {
@@ -396,21 +429,23 @@ const CreatePost = () => {
                     outline: none;
                     font-size: 16px;
                     line-height: 1.6;
-                    color: #334155;
+                    color: #cbd5e1;
                     resize: none;
                     font-family: inherit;
                     padding: 0;
+                    background: transparent;
                 }
 
                 .doc-textarea.script {
                     min-height: 500px;
-                    background: white;
+                    background: transparent;
                     padding: 0;
                     border-radius: 0;
                     font-family: 'Inter', sans-serif;
                     font-size: 16px;
                     border: none;
                     line-height: 1.8;
+                    color: #cbd5e1;
                 }
 
                 .doc-section {
@@ -427,7 +462,7 @@ const CreatePost = () => {
                     font-weight: 700;
                     color: #64748b;
                     padding-bottom: 8px;
-                    border-bottom: 1px solid #f1f5f9;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                 }
 
                 @media (max-width: 1100px) {
@@ -450,7 +485,7 @@ const CreatePost = () => {
                     gap: 8px;
                     margin-top: -30px;
                     margin-bottom: 10px;
-                    color: #94a3b8;
+                    color: #64748b;
                     font-size: 13px;
                     font-weight: 600;
                 }
@@ -677,15 +712,16 @@ const CreatePost = () => {
                         style={{
                             marginTop: '20px',
                             padding: '20px',
-                            background: '#eef2ff',
+                            background: 'rgba(59, 130, 246, 0.1)',
                             borderRadius: '16px',
+                            border: '1px solid rgba(59, 130, 246, 0.1)',
                         }}
                     >
                         <div
                             style={{
                                 display: 'flex',
                                 gap: '8px',
-                                color: '#002B72',
+                                color: '#3b82f6',
                                 marginBottom: '8px',
                             }}
                         >
@@ -706,7 +742,7 @@ const CreatePost = () => {
                             style={{
                                 margin: 0,
                                 fontSize: '12px',
-                                color: '#4338ca',
+                                color: '#94a3b8',
                                 lineHeight: 1.5,
                             }}
                         >

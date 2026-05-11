@@ -6,11 +6,11 @@ const ActivityFeed = ({ activities, getActivityStyle, getActivityIcon }) => {
         <div className="activity-section" style={{ marginTop: '48px' }}>
             <style>{`
                 .activity-section {
-                    background: white;
+                    background: #0a1936;
                     padding: 32px;
                     border-radius: 32px;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                 }
                 .activity-list {
                     display: flex;
@@ -22,7 +22,7 @@ const ActivityFeed = ({ activities, getActivityStyle, getActivityIcon }) => {
                     display: flex;
                     gap: 20px;
                     padding: 20px 0;
-                    border-bottom: 1px solid #f1f5f9;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                 }
                 .activity-item:last-child {
                     border-bottom: none;
@@ -46,16 +46,16 @@ const ActivityFeed = ({ activities, getActivityStyle, getActivityIcon }) => {
                 .activity-user {
                     font-size: 14px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                 }
                 .activity-text {
                     font-size: 14px;
-                    color: #64748b;
+                    color: #94a3b8;
                     margin-top: 4px;
                 }
                 .activity-time {
                     font-size: 12px;
-                    color: #94a3b8;
+                    color: #64748b;
                     font-weight: 600;
                     margin-top: 8px;
                 }
@@ -63,17 +63,17 @@ const ActivityFeed = ({ activities, getActivityStyle, getActivityIcon }) => {
                     display: inline-flex;
                     align-items: center;
                     padding: 4px 10px;
-                    background: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
                     border-radius: 8px;
                     font-size: 12px;
                     font-weight: 700;
-                    color: #475569;
+                    color: #cbd5e1;
                     margin-left: 8px;
                 }
             `}</style>
 
             <div className="section-header" style={{ marginBottom: '0' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#002B72', margin: 0 }}>Team Activity</h2>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', margin: 0 }}>Team Activity</h2>
             </div>
 
             <div className="activity-list">

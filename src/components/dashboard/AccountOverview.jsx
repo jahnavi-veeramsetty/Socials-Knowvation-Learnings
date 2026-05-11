@@ -16,7 +16,7 @@ const AccountOverview = ({ posts, brandColors, today, weekRange, orgId }) => {
                 .section-header h2 {
                     font-size: 20px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                     margin-bottom: 24px;
                 }
                 .accounts-grid {
@@ -25,11 +25,11 @@ const AccountOverview = ({ posts, brandColors, today, weekRange, orgId }) => {
                     gap: 24px;
                 }
                 .account-card {
-                    background: white;
+                    background: #0a1936;
                     padding: 24px;
                     border-radius: 24px;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                     display: flex;
                     flex-direction: column;
                 }
@@ -48,23 +48,23 @@ const AccountOverview = ({ posts, brandColors, today, weekRange, orgId }) => {
                     margin: 0;
                     font-size: 16px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                 }
                 .account-stats-row {
                     display: flex;
                     justify-content: space-between;
                     padding: 12px 0;
-                    border-top: 1px solid #f1f5f9;
+                    border-top: 1px solid rgba(255, 255, 255, 0.05);
                 }
                 .account-stat-label {
                     font-size: 13px;
                     font-weight: 600;
-                    color: #64748b;
+                    color: #94a3b8;
                 }
                 .account-stat-value {
                     font-size: 14px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                 }
                 .upcoming-posts {
                     margin-top: 16px;
@@ -75,7 +75,7 @@ const AccountOverview = ({ posts, brandColors, today, weekRange, orgId }) => {
                 .upcoming-title {
                     font-size: 11px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                     margin-bottom: 4px;
@@ -85,16 +85,21 @@ const AccountOverview = ({ posts, brandColors, today, weekRange, orgId }) => {
                     align-items: center;
                     gap: 8px;
                     padding: 8px 12px;
-                    background: #f8fafc;
+                    background: rgba(255, 255, 255, 0.02);
                     border-radius: 10px;
                     font-size: 12px;
                     font-weight: 600;
-                    color: #475569;
-                    border: 1px solid #f1f5f9;
+                    color: #cbd5e1;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    transition: all 0.2s;
+                }
+                .mini-post-item:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: white;
                 }
                 .mini-post-date {
                     font-size: 10px;
-                    color: #94a3b8;
+                    color: #64748b;
                     margin-left: auto;
                 }
             `}</style>

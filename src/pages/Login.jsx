@@ -41,23 +41,24 @@ const Login = () => {
                     min-height: 100vh;
                     padding: 20px;
                     font-family: 'Inter', sans-serif;
-                    background: #f7f9fc;
+                    background: #010D2C;
+                    color: #ffffff;
                 }
 
                 .login-card {
                     width: 100%;
                     max-width: 440px;
-                    background: white;
+                    background: #0a1936;
                     padding: 50px;
                     border-radius: 32px;
-                    box-shadow: 0 20px 50px rgba(0, 43, 114, 0.1);
-                    border: 1px solid rgba(0, 43, 114, 0.05);
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
                 }
 
                 .login-card:hover {
                     transform: translateY(-5px);
-                    box-shadow: 0 30px 60px rgba(0, 43, 114, 0.15);
+                    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
                 }
 
                 .login-header {
@@ -66,7 +67,7 @@ const Login = () => {
                 }
 
                 .login-header h1 {
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 32px;
                     font-weight: 800;
                     margin: 0 0 10px;
@@ -74,7 +75,7 @@ const Login = () => {
                 }
 
                 .login-header p {
-                    color: #666;
+                    color: #64748b;
                     font-size: 16px;
                     margin: 0;
                 }
@@ -87,7 +88,7 @@ const Login = () => {
                     display: block;
                     font-size: 14px;
                     font-weight: 600;
-                    color: #333;
+                    color: #cbd5e1;
                     margin-bottom: 8px;
                     margin-left: 4px;
                 }
@@ -96,18 +97,19 @@ const Login = () => {
                     width: 100%;
                     padding: 16px 20px;
                     border-radius: 16px;
-                    border: 2px solid #eee;
-                    background: #fcfcfc;
+                    border: 2px solid rgba(255, 255, 255, 0.05);
+                    background: rgba(255, 255, 255, 0.02);
                     font-size: 16px;
                     transition: all 0.2s ease;
                     box-sizing: border-box;
+                    color: white;
                 }
 
                 .form-group input:focus {
                     outline: none;
                     border-color: #002B72;
-                    background: white;
-                    box-shadow: 0 0 0 4px rgba(0, 43, 114, 0.1);
+                    background: rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 0 0 4px rgba(0, 43, 114, 0.2);
                 }
 
                 .submit-btn {
@@ -122,13 +124,13 @@ const Login = () => {
                     cursor: pointer;
                     transition: all 0.3s ease;
                     margin-top: 10px;
-                    box-shadow: 0 10px 20px rgba(0, 43, 114, 0.2);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
                 }
 
                 .submit-btn:hover {
                     background: #001f54;
                     transform: translateY(-2px);
-                    box-shadow: 0 15px 25px rgba(0, 43, 114, 0.3);
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
                 }
 
                 .submit-btn:active {
@@ -136,7 +138,7 @@ const Login = () => {
                 }
 
                 .submit-btn:disabled {
-                    opacity: 0.7;
+                    opacity: 0.5;
                     cursor: not-allowed;
                 }
             `}</style>

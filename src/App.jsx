@@ -59,9 +59,9 @@ const ProtectedRoute = ({ children }) => {
 
 const Layout = () => {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#010D2C' }}>
       <SideBar />
-      <main style={{ flex: 1, background: '#f7f9fc' }}>
+      <main style={{ flex: 1, background: '#010D2C' }}>
         <ScrollToTop />
         <Outlet />
       </main>

@@ -184,6 +184,9 @@ const Settings = () => {
                     font-family: 'Inter', sans-serif;
                     max-width: 720px;
                     margin: 0 auto;
+                    background: #010D2C;
+                    min-height: 100vh;
+                    color: #ffffff;
                 }
                 .settings-header {
                     margin-bottom: 32px;
@@ -197,7 +200,7 @@ const Settings = () => {
                     gap: 12px;
                 }
                 .header-title h1 {
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 24px;
                     font-weight: 800;
                     margin: 0;
@@ -215,14 +218,14 @@ const Settings = () => {
                     border: none;
                     cursor: pointer;
                     transition: all 0.2s;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.2);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
                 }
                 .global-save-btn:hover:not(:disabled) {
                     background: #001f54;
                     transform: translateY(-2px);
                 }
                 .global-save-btn:disabled {
-                    opacity: 0.5;
+                    opacity: 0.3;
                     cursor: not-allowed;
                     transform: none;
                 }
@@ -251,13 +254,13 @@ const Settings = () => {
                     left: 0;
                     width: 100%;
                     height: 1px;
-                    background: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
                 }
                 
                 .section-title {
                     font-size: 16px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                     margin: 0 0 4px 0;
                 }
                 .section-desc {
@@ -276,8 +279,8 @@ const Settings = () => {
                     justify-content: space-between;
                     align-items: center;
                     padding: 16px 20px;
-                    background: white;
-                    border: 1.5px solid #f1f5f9;
+                    background: #0a1936;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     border-radius: 16px;
                     cursor: pointer;
                     transition: all 0.2s;
@@ -286,12 +289,12 @@ const Settings = () => {
                 }
                 .org-switch-item:hover:not(:disabled) {
                     border-color: #002B72;
-                    background: #f8fafc;
+                    background: rgba(255, 255, 255, 0.02);
                     transform: translateX(4px);
                 }
                 .org-switch-item.current {
-                    background: #f8fafc;
-                    border-color: #e2e8f0;
+                    background: rgba(255, 255, 255, 0.02);
+                    border-color: rgba(255, 255, 255, 0.1);
                     cursor: default;
                 }
                 .org-info {
@@ -302,13 +305,13 @@ const Settings = () => {
                 .org-name {
                     font-size: 15px;
                     font-weight: 700;
-                    color: #1e293b;
+                    color: #ffffff;
                 }
                 .current-tag {
                     font-size: 10px;
                     font-weight: 800;
                     text-transform: uppercase;
-                    background: #e2e8f0;
+                    background: rgba(255, 255, 255, 0.05);
                     color: #64748b;
                     padding: 4px 8px;
                     border-radius: 6px;

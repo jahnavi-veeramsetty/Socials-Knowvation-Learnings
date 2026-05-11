@@ -122,9 +122,9 @@ const Dashboard = () => {
     };
 
     const getActivityStyle = (type) => {
-        if (type === 'approve') return { background: '#ecfdf5', color: '#10b981' };
-        if (type === 'reject') return { background: '#fff1f0', color: '#ff4d4f' };
-        return { background: '#eff6ff', color: '#3b82f6' };
+        if (type === 'approve') return { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
+        if (type === 'reject') return { background: 'rgba(239, 68, 68, 0.1)', color: '#ff4d4f' };
+        return { background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' };
     };
 
     if (loading) {
@@ -136,10 +136,10 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="dashboard-page" style={{ padding: '32px 48px', background: '#f8fafc', minHeight: '100vh' }}>
+        <div className="dashboard-page" style={{ padding: '32px 48px', background: '#010D2C', minHeight: '100vh' }}>
             <style>{`
                 .dashboard-header { margin-bottom: 32px; }
-                .dashboard-header h1 { color: #002B72; font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -1px; }
+                .dashboard-header h1 { color: #ffffff; font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -1px; }
             `}</style>
 
             <div className="dashboard-header">

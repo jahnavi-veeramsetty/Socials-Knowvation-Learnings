@@ -155,6 +155,9 @@ const Quiz = () => {
                     font-family: 'Inter', sans-serif;
                     max-width: 1100px;
                     margin: 0 auto;
+                    background: #010D2C;
+                    min-height: 100vh;
+                    color: #ffffff;
                 }
 
                 .top-bar {
@@ -174,40 +177,41 @@ const Quiz = () => {
                     left: 16px;
                     top: 50%;
                     transform: translateY(-50%);
-                    color: #999;
+                    color: #64748b;
                 }
 
                 .search-input {
                     width: 100%;
                     padding: 14px 14px 14px 48px;
                     border-radius: 14px;
-                    border: 1.5px solid #eee;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     font-size: 15px;
                     outline: none;
                     transition: all 0.2s;
-                    background: white;
+                    background: #0a1936;
+                    color: white;
                     box-sizing: border-box;
                 }
 
                 .search-input:focus {
                     border-color: #002B72;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.05);
+                    background: rgba(255, 255, 255, 0.08);
                 }
 
                 .filter-wrapper {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    background: white;
+                    background: #0a1936;
                     padding: 10px 16px;
                     border-radius: 14px;
-                    border: 1.5px solid #eee;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                 }
 
                 .filter-select {
                     border: none;
                     font-weight: 600;
-                    color: #444;
+                    color: #cbd5e1;
                     outline: none;
                     background: transparent;
                     cursor: pointer;
@@ -232,16 +236,16 @@ const Quiz = () => {
                 .add-box:hover {
                     background: #001f54;
                     transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(0, 43, 114, 0.2);
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
                 }
 
                 .empty-list {
                     text-align: center;
                     padding: 80px 20px;
-                    background: white;
+                    background: #0a1936;
                     border-radius: 24px;
-                    border: 2px dashed #eee;
-                    color: #888;
+                    border: 2px dashed rgba(255, 255, 255, 0.05);
+                    color: #64748b;
                 }
 
                 .submit-quiz-footer {

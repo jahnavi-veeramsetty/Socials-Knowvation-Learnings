@@ -8,21 +8,21 @@ const GeneralSettings = ({ orgName, setOrgName }) => {
                     margin-bottom: 24px;
                 }
                 .section-header h2 {
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 20px;
                     font-weight: 800;
                     margin: 0 0 4px;
                 }
                 .section-header p {
-                    color: #666;
+                    color: #64748b;
                     font-size: 14px;
                 }
                 .settings-card {
-                    background: white;
+                    background: #0a1936;
                     border-radius: 20px;
                     padding: 24px;
-                    border: 1px solid #f0f0f0;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                 }
                 .form-group {
                     margin-bottom: 20px;
@@ -31,22 +31,24 @@ const GeneralSettings = ({ orgName, setOrgName }) => {
                     display: block;
                     font-size: 13px;
                     font-weight: 600;
-                    color: #333;
+                    color: #cbd5e1;
                     margin-bottom: 6px;
                 }
                 .form-input {
                     width: 100%;
                     padding: 12px 16px;
                     border-radius: 10px;
-                    border: 1.5px solid #eee;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     font-size: 14px;
                     outline: none;
                     transition: all 0.2s;
                     box-sizing: border-box;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: white;
                 }
                 .form-input:focus {
                     border-color: #002B72;
-                    background: white;
+                    background: rgba(255, 255, 255, 0.08);
                 }
             `}</style>
 

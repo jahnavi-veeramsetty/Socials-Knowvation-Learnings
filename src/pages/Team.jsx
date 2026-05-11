@@ -393,8 +393,9 @@ const Team = () => {
                 .team-page {
                     padding: 40px;
                     font-family: 'Inter', sans-serif;
-                    background: #f8fafc;
+                    background: #010D2C;
                     min-height: 100vh;
+                    color: #ffffff;
                 }
 
                 .team-header {
@@ -405,7 +406,7 @@ const Team = () => {
                 }
 
                 .team-header h1 {
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 32px;
                     font-weight: 800;
                     margin: 0;
@@ -421,10 +422,10 @@ const Team = () => {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    background: white;
+                    background: #0a1936;
                     padding: 12px 20px;
                     border-radius: 16px;
-                    border: 1.5px solid #e2e8f0;
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
                     flex: 1;
                     max-width: 400px;
                 }
@@ -435,6 +436,8 @@ const Team = () => {
                     width: 100%;
                     font-size: 14px;
                     font-weight: 500;
+                    background: transparent;
+                    color: white;
                 }
 
                 .invite-btn {
@@ -448,6 +451,12 @@ const Team = () => {
                     align-items: center;
                     gap: 10px;
                     cursor: pointer;
+                    transition: all 0.2s;
+                }
+                
+                .invite-btn:hover {
+                    background: #001f54;
+                    transform: translateY(-2px);
                 }
 
                 .team-grid {
@@ -457,18 +466,20 @@ const Team = () => {
                 }
 
                 .team-card {
-                    background: white;
+                    background: #0a1936;
                     border-radius: 32px;
                     padding: 32px;
                     position: relative;
-                    box-shadow: 0 4px 20px rgba(0, 43, 114, 0.05);
-                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                     transition: all 0.3s;
                     text-align: center;
                 }
 
                 .team-card:hover {
                     transform: translateY(-8px);
+                    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+                    border-color: #002B72;
                 }
 
                 .card-options {
@@ -478,6 +489,12 @@ const Team = () => {
                     cursor: pointer;
                     padding: 8px;
                     border-radius: 50%;
+                    color: #64748b;
+                }
+                
+                .card-options:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: white;
                 }
 
                 .dropdown-menu {
@@ -485,10 +502,10 @@ const Team = () => {
                     top: 56px;
                     right: 24px;
                     width: 180px;
-                    background: white;
+                    background: #0a1936;
                     border-radius: 16px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
                     overflow: hidden;
                     z-index: 100;
                 }
@@ -502,10 +519,12 @@ const Team = () => {
                     display: flex;
                     align-items: center;
                     gap: 10px;
+                    color: #cbd5e1;
                 }
 
                 .dropdown-item:hover {
-                    background: #f8fafc;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: white;
                 }
 
                 .dropdown-item.danger {
@@ -515,21 +534,22 @@ const Team = () => {
                 .avatar-container {
                     width: 100px;
                     height: 100px;
-                    background: #f8fafc;
+                    background: rgba(255, 255, 255, 0.02);
                     border-radius: 30px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 32px;
                     font-weight: 900;
-                    color: #3b82f6;
+                    color: #ffffff;
                     margin: 0 auto 24px;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                 }
 
                 .member-name {
                     font-size: 24px;
                     font-weight: 900;
-                    color: #002B72;
+                    color: #ffffff;
                     margin-bottom: 8px;
                 }
 
@@ -539,7 +559,7 @@ const Team = () => {
                     justify-content: center;
                     gap: 8px;
                     font-size: 14px;
-                    color: #64748b;
+                    color: #94a3b8;
                     margin-bottom: 20px;
                 }
 
@@ -547,7 +567,7 @@ const Team = () => {
                     display: inline-flex;
                     align-items: center;
                     gap: 6px;
-                    background: #eff6ff;
+                    background: rgba(59, 130, 246, 0.1);
                     color: #3b82f6;
                     padding: 8px 16px;
                     border-radius: 999px;
@@ -559,7 +579,7 @@ const Team = () => {
                 .card-divider {
                     width: 100%;
                     height: 1px;
-                    background: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
                     margin-bottom: 24px;
                 }
 
@@ -578,20 +598,20 @@ const Team = () => {
                 .stat-label {
                     font-size: 11px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                     text-transform: uppercase;
                 }
 
                 .stat-value {
                     font-size: 22px;
                     font-weight: 900;
-                    color: #002B72;
+                    color: #ffffff;
                 }
 
                 .stat-divider {
                     width: 1px;
                     height: 40px;
-                    background: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
                 }
             `}</style>
 

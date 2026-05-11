@@ -37,7 +37,7 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                 .section-header h2 {
                     font-size: 18px;
                     font-weight: 800;
-                    color: #0f172a;
+                    color: #ffffff;
                     margin: 0;
                 }
 
@@ -52,10 +52,11 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                     flex-direction: column;
                     align-items: center;
                     gap: 20px;
-                    background: #f8fafc;
+                    background: #0a1936;
                     padding: 40px;
                     border-radius: 32px;
-                    border: 1px solid #f1f5f9;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
                 }
 
                 /* Customizing react-colorful */
@@ -67,7 +68,7 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                 }
 
                 .react-colorful__saturation {
-                    border-bottom: 12px solid #f8fafc;
+                    border-bottom: 12px solid #0a1936;
                     border-radius: 12px 12px 0 0;
                 }
 
@@ -80,17 +81,17 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    background: white;
+                    background: rgba(255, 255, 255, 0.05);
                     padding: 10px 20px;
                     border-radius: 14px;
-                    border: 1.5px solid #e2e8f0;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                    border: 1.5px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
                     width: 200px;
                 }
 
                 .hex-input-section span {
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                 }
 
                 .hex-input-field {
@@ -98,10 +99,11 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                     outline: none;
                     font-family: 'Inter', sans-serif;
                     font-weight: 700;
-                    color: #0f172a;
+                    color: #ffffff;
                     width: 100%;
                     text-transform: uppercase;
                     font-size: 15px;
+                    background: transparent;
                 }
 
                 .account-cards-row {
@@ -116,7 +118,7 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                     align-items: center;
                     gap: 16px;
                     padding: 24px;
-                    background: #fbfcfd;
+                    background: rgba(255, 255, 255, 0.02);
                     border-radius: 24px;
                     border: 2px solid transparent;
                     cursor: pointer;
@@ -124,15 +126,15 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                 }
 
                 .account-color-card:hover {
-                    background: white;
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-                    border-color: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                    border-color: rgba(255, 255, 255, 0.05);
                 }
 
                 .account-color-card.active {
-                    background: white;
+                    background: rgba(0, 43, 114, 0.2);
                     border-color: #002B72;
-                    box-shadow: 0 10px 25px rgba(0, 43, 114, 0.1);
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
                     transform: translateY(-4px);
                 }
 
@@ -140,8 +142,8 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                     width: 60px;
                     height: 60px;
                     border-radius: 50%;
-                    border: 4px solid white;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    border: 4px solid #0a1936;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                     transition: transform 0.3s;
                 }
 
@@ -156,7 +158,7 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                 .card-meta strong {
                     display: block;
                     font-size: 15px;
-                    color: #0f172a;
+                    color: #ffffff;
                     margin-bottom: 2px;
                 }
 

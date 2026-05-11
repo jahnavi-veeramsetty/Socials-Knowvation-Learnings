@@ -15,23 +15,22 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
         <div className={`question-display-card ${question.isPosted ? 'is-posted' : ''}`}>
             <style>{`
                 .question-display-card {
-                    background: white;
+                    background: #0a1936;
                     border-radius: 20px;
                     padding: 24px;
                     margin-bottom: 20px;
-                    border: 1px solid #f0f0f0;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                     transition: all 0.3s ease;
                     position: relative;
                 }
                 .question-display-card.is-posted {
-                    background: #f8fafc;
-                    opacity: 0.7;
-                    border-color: #e2e8f0;
+                    background: rgba(10, 25, 54, 0.6);
+                    opacity: 0.8;
                 }
                 .question-display-card:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 8px 24px rgba(0, 43, 114, 0.08);
+                    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
                 }
                 .card-header {
                     display: flex;
@@ -46,7 +45,7 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
                 }
                 .q-num {
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 14px;
                 }
                 .diff-badge {
@@ -60,7 +59,7 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
                 .q-text {
                     font-size: 17px;
                     font-weight: 600;
-                    color: #111;
+                    color: #ffffff;
                     margin: 0 0 20px;
                     line-height: 1.5;
                 }
@@ -75,14 +74,15 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
                     gap: 10px;
                     padding: 12px 16px;
                     border-radius: 12px;
-                    background: #f9fafb;
-                    border: 1px solid #eee;
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                     font-size: 14px;
+                    color: #cbd5e1;
                 }
                 .opt-item-display.is-correct {
-                    background: #f0fdf4;
+                    background: rgba(74, 222, 128, 0.1);
                     border-color: #4ade80;
-                    color: #166534;
+                    color: #4ade80;
                     font-weight: 600;
                 }
                 .card-actions {
@@ -91,7 +91,7 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
                 }
                 .remove-card-btn {
                     color: #ff4d4f;
-                    background: #fff1f0;
+                    background: rgba(239, 68, 68, 0.1);
                     border: none;
                     width: 32px;
                     height: 32px;
@@ -107,7 +107,7 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
                     color: white;
                 }
                 .posted-toggle {
-                    background: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
                     color: #64748b;
                     border: none;
                     padding: 6px 16px;

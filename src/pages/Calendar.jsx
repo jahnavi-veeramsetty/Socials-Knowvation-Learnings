@@ -126,9 +126,9 @@ const Calendar = () => {
                 .calendar-page {
                     padding: 32px 48px;
                     font-family: 'Inter', sans-serif;
-                    background: #f8fafc;
+                    background: #010D2C;
                     min-height: 100vh;
-                    color: #1e293b;
+                    color: #ffffff;
                 }
                 .calendar-header {
                     display: flex;
@@ -149,7 +149,7 @@ const Calendar = () => {
                     gap: 16px;
                 }
                 .header-top h1 {
-                    color: #002B72;
+                    color: #ffffff;
                     font-size: 32px;
                     font-weight: 900;
                     margin: 0;
@@ -159,11 +159,11 @@ const Calendar = () => {
                     display: flex;
                     gap: 12px;
                     align-items: center;
-                    background: white;
+                    background: #0a1936;
                     padding: 8px;
                     border-radius: 16px;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                     width: fit-content;
                 }
                 .search-wrapper {
@@ -175,23 +175,23 @@ const Calendar = () => {
                     padding: 10px 16px 10px 40px;
                     border-radius: 12px;
                     border: 1px solid transparent;
-                    background: #f1f5f9;
+                    background: rgba(255, 255, 255, 0.05);
                     font-size: 14px;
                     font-weight: 600;
                     outline: none;
                     transition: all 0.2s;
+                    color: white;
                 }
                 .search-input:focus {
-                    background: white;
+                    background: rgba(255, 255, 255, 0.08);
                     border-color: #002B72;
-                    box-shadow: 0 0 0 4px rgba(0, 43, 114, 0.05);
                 }
                 .search-icon {
                     position: absolute;
                     left: 14px;
                     top: 50%;
                     transform: translateY(-50%);
-                    color: #94a3b8;
+                    color: #64748b;
                 }
                 .brand-legend {
                     display: flex;
@@ -203,7 +203,7 @@ const Calendar = () => {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: 800;
                     padding: 6px 14px;
                     border-radius: 10px;
@@ -212,7 +212,7 @@ const Calendar = () => {
                 }
                 .legend-item:hover {
                     transform: translateY(-1px);
-                    filter: brightness(0.95);
+                    filter: brightness(1.1);
                 }
                 .legend-marker {
                     width: 6px;
@@ -227,33 +227,33 @@ const Calendar = () => {
                 .filter-select {
                     padding: 10px 16px;
                     border-radius: 12px;
-                    border: 1px solid #e2e8f0;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                     font-size: 13px;
                     font-weight: 700;
-                    color: #475569;
-                    background: white;
+                    color: #cbd5e1;
+                    background: #0a1936;
                     outline: none;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
                 .filter-select:hover {
                     border-color: #002B72;
-                    color: #002B72;
+                    color: white;
                 }
                 .month-nav {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    background: white;
+                    background: #0a1936;
                     padding: 8px;
                     border-radius: 16px;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                 }
                 .month-nav h2 {
                     font-size: 16px;
                     font-weight: 800;
-                    color: #002B72;
+                    color: #ffffff;
                     margin: 0;
                     padding: 0 16px;
                     min-width: 140px;
@@ -272,28 +272,28 @@ const Calendar = () => {
                     justify-content: center;
                 }
                 .nav-btn:hover {
-                    background: #f1f5f9;
-                    color: #002B72;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: white;
                 }
                 .calendar-container {
-                    background: white;
+                    background: #0a1936;
                     border-radius: 32px;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 20px 40px rgba(0, 43, 114, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
                     overflow: hidden;
                 }
                 .days-header {
                     display: grid;
                     grid-template-columns: repeat(7, 1fr);
-                    background: #fbfcfd;
-                    border-bottom: 1px solid #f1f5f9;
+                    background: rgba(255, 255, 255, 0.02);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                 }
                 .day-label {
                     padding: 20px;
                     text-align: center;
                     font-size: 11px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                     text-transform: uppercase;
                     letter-spacing: 1.5px;
                 }
@@ -304,23 +304,23 @@ const Calendar = () => {
                 .calendar-day {
                     min-height: 140px;
                     padding: 14px;
-                    border-right: 1px solid #f1f5f9;
-                    border-bottom: 1px solid #f1f5f9;
+                    border-right: 1px solid rgba(255, 255, 255, 0.05);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                     position: relative;
                     transition: all 0.2s;
-                    background: white;
+                    background: #0a1936;
                 }
                 .calendar-day:nth-child(7n) {
                     border-right: none;
                 }
                 .calendar-day:hover {
-                    background: #fcfdfe;
+                    background: rgba(255, 255, 255, 0.02);
                     z-index: 10;
                 }
                 .day-number {
                     font-size: 13px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #64748b;
                     width: 32px;
                     height: 32px;
                     display: flex;
@@ -331,13 +331,13 @@ const Calendar = () => {
                     transition: all 0.2s;
                 }
                 .calendar-day:hover .day-number {
-                    color: #002B72;
-                    background: #f1f5f9;
+                    color: #ffffff;
+                    background: rgba(255, 255, 255, 0.05);
                 }
                 .day-number.is-today {
                     background: #002B72;
                     color: white;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.4);
                 }
                 .day-posts {
                     display: flex;
@@ -357,14 +357,13 @@ const Calendar = () => {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    background: rgba(0, 43, 114, 0.05);
-                    border: 1px solid rgba(0, 43, 114, 0.15);
-                    color: #002B72;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
                 }
                 .post-indicator:hover {
                     transform: translateY(-2px);
-                    background: rgba(0, 43, 114, 0.08);
-                    border-color: rgba(0, 43, 114, 0.3);
+                    background: rgba(255, 255, 255, 0.1);
+                    filter: brightness(1.2);
                 }
                 .platform-icon {
                     display: flex;
@@ -373,7 +372,7 @@ const Calendar = () => {
                     opacity: 0.8;
                 }
                 .empty-day {
-                    background: #fbfcfd;
+                    background: rgba(0, 0, 0, 0.1);
                 }
             `}</style>
 

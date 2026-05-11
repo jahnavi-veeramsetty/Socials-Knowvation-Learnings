@@ -6,11 +6,11 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
 
     const getStatusStyle = (status) => {
         switch (status) {
-            case 'published': return { bg: '#f0fdf4', color: '#16a34a', icon: <CheckCircle size={14} /> };
-            case 'approved': return { bg: '#eff6ff', color: '#2563eb', icon: <ShieldCheck size={14} /> };
-            case 'pending review': return { bg: '#fffbeb', color: '#d97706', icon: <Clock size={14} /> };
-            case 'draft': return { bg: '#f1f5f9', color: '#64748b', icon: <FileText size={14} /> };
-            default: return { bg: '#f1f5f9', color: '#64748b' };
+            case 'published': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: <CheckCircle size={14} /> };
+            case 'approved': return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', icon: <ShieldCheck size={14} /> };
+            case 'pending review': return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', icon: <Clock size={14} /> };
+            case 'draft': return { bg: 'rgba(255, 255, 255, 0.05)', color: '#94a3b8', icon: <FileText size={14} /> };
+            default: return { bg: 'rgba(255, 255, 255, 0.05)', color: '#94a3b8' };
         }
     };
 
@@ -46,11 +46,11 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
         <div className="post-card" onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}>
             <style>{`
                 .post-card {
-                    background: white;
+                    background: #0a1936;
                     border-radius: 20px;
                     padding: 24px;
-                    border: 1px solid #f1f5f9;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                     transition: all 0.3s ease;
                     display: flex;
                     flex-direction: column;
@@ -60,7 +60,7 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                 }
                 .post-card:hover {
                     transform: translateY(-4px);
-                    box-shadow: 0 12px 24px rgba(0, 43, 114, 0.08);
+                    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
                     border-color: #002B72;
                 }
                 .card-top {
@@ -73,8 +73,8 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                     font-weight: 800;
                     padding: 4px 8px;
                     border-radius: 6px;
-                    background: #f0f4ff;
-                    color: #002B72;
+                    background: rgba(0, 43, 114, 0.3);
+                    color: white;
                     text-transform: uppercase;
                 }
                 .status-badge {
@@ -90,13 +90,13 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                 .post-title {
                     font-size: 16px;
                     font-weight: 800;
-                    color: #111;
+                    color: #ffffff;
                     margin: 0;
                     line-height: 1.4;
                 }
                 .post-caption {
                     font-size: 13px;
-                    color: #666;
+                    color: #94a3b8;
                     margin: 4px 0 0;
                     display: -webkit-box;
                     -webkit-line-clamp: 2;
@@ -106,14 +106,14 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                 }
                 .creator-info {
                     font-size: 11px;
-                    color: #94a3b8;
+                    color: #64748b;
                     font-weight: 600;
                     margin-top: 8px;
                 }
                 .card-footer {
                     margin-top: auto;
                     padding-top: 16px;
-                    border-top: 1px solid #f8fafc;
+                    border-top: 1px solid rgba(255, 255, 255, 0.05);
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
@@ -122,7 +122,7 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    color: #94a3b8;
+                    color: #64748b;
                 }
                 .meta-item {
                     display: flex;
@@ -154,25 +154,25 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                 }
                 .approve-btn:hover { background: #001f54; }
                 .reject-btn {
-                    padding: 8px 16px;
-                    border-radius: 10px;
-                    font-size: 13px;
+                    padding: 6px 12px;
+                    border-radius: 8px;
+                    font-size: 11px;
                     font-weight: 700;
                     cursor: pointer;
                     transition: all 0.2s;
-                    background: #fff1f0;
+                    background: rgba(239, 68, 68, 0.1);
                     color: #ff4d4f;
-                    border: 1px solid #ffccc7;
+                    border: 1px solid rgba(239, 68, 68, 0.2);
                 }
                 .reject-btn:hover {
                     background: #ff4d4f;
                     color: white;
                 }
                 .edit-btn {
-                    background: #f1f5f9;
-                    color: #475569;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #cbd5e1;
                 }
-                .edit-btn:hover { background: #e2e8f0; }
+                .edit-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
             `}</style>
 
             <div className="card-top">
