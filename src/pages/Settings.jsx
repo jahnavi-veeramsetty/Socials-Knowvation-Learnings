@@ -21,6 +21,7 @@ const Settings = () => {
         KLS: '#4f46e5',
         KLC: '#0ea5e9'
     });
+    const [allOrgs, setAllOrgs] = useState([]);
     const [notification, setNotification] = useState(null);
     
     // Initial data to check for changes
@@ -101,6 +102,22 @@ const Settings = () => {
             orgName: org?.name || '',
             brandColors: colors
         });
+
+        // Fetch all organizations for switching
+        const { data: memberOrgs } = await supabase
+            .from('organization_members')
+            .select(`
+                organizations:organization_id (
+                    id,
+                    name
+                )
+            `)
+            .eq('user_id', user.id);
+
+        if (memberOrgs) {
+            const orgs = memberOrgs.map(m => m.organizations).filter(Boolean);
+            setAllOrgs(orgs);
+        }
 
         setLoading(false);
     };
@@ -237,6 +254,74 @@ const Settings = () => {
                     background: #f1f5f9;
                 }
                 
+                .section-title {
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: #002B72;
+                    margin: 0 0 4px 0;
+                }
+                .section-desc {
+                    font-size: 13px;
+                    color: #64748b;
+                    margin: 0 0 16px 0;
+                    font-weight: 500;
+                }
+                .org-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .org-switch-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 20px;
+                    background: white;
+                    border: 1.5px solid #f1f5f9;
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    width: 100%;
+                    text-align: left;
+                }
+                .org-switch-item:hover:not(:disabled) {
+                    border-color: #002B72;
+                    background: #f8fafc;
+                    transform: translateX(4px);
+                }
+                .org-switch-item.current {
+                    background: #f8fafc;
+                    border-color: #e2e8f0;
+                    cursor: default;
+                }
+                .org-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+                .org-name {
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #1e293b;
+                }
+                .current-tag {
+                    font-size: 10px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    background: #e2e8f0;
+                    color: #64748b;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                }
+                .switch-arrow {
+                    color: #cbd5e1;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+                .org-switch-item:hover .switch-arrow {
+                    color: #002B72;
+                }
+                
                 @media (max-width: 600px) {
                     .settings-header {
                         flex-direction: column;
@@ -297,6 +382,29 @@ const Settings = () => {
                     brandColors={brandColors}
                     setBrandColors={setBrandColors}
                 />
+
+                {allOrgs.length > 1 && (
+                    <div className="org-switcher-section">
+                        <h3 className="section-title">Switch Organization</h3>
+                        <p className="section-desc">Jump to another organization workspace</p>
+                        <div className="org-list">
+                            {allOrgs.map(org => (
+                                <button 
+                                    key={org.id}
+                                    className={`org-switch-item ${org.id === orgId ? 'current' : ''}`}
+                                    onClick={() => org.id !== orgId && navigate(`/org/${org.id}/dashboard`)}
+                                    disabled={org.id === orgId}
+                                >
+                                    <div className="org-info">
+                                        <span className="org-name">{org.name}</span>
+                                        {org.id === orgId && <span className="current-tag">Current</span>}
+                                    </div>
+                                    <div className="switch-arrow">→</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {notification && (

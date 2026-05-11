@@ -64,7 +64,7 @@ const Dashboard = () => {
             `)
             .eq('organization_id', orgId)
             .order('created_at', { ascending: false })
-            .limit(10);
+            .limit(6);
 
         if (!error) {
             setActivities(data || []);

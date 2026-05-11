@@ -10,6 +10,7 @@ import {
     Link as LinkIcon,
     StickyNote,
     Info,
+    Users,
 } from 'lucide-react';
 
 import { supabase } from '../supabase/supabase';
@@ -26,6 +27,7 @@ const CreatePost = () => {
     const [loading, setLoading] = useState(postId ? true : false);
     const [canEdit, setCanEdit] = useState(true);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [creatorName, setCreatorName] = useState(null);
     const [notification, setNotification] = useState(null);
 
     const [formData, setFormData] = useState({
@@ -50,17 +52,36 @@ const CreatePost = () => {
         if (!user) return;
         setCurrentUserId(user.id);
 
+        // Fetch user role
+        const { data: memberData } = await supabase
+            .from('organization_members')
+            .select('role')
+            .eq('organization_id', orgId)
+            .eq('user_id', user.id)
+            .single();
+
+        const userRole = memberData?.role;
+
         if (postId) {
             setLoading(true);
             const { data, error } = await supabase
                 .from('posts')
-                .select('*')
+                .select(`
+                    *,
+                    profiles:created_by (full_name, email)
+                `)
                 .eq('id', postId)
                 .single();
 
             if (data) {
                 setFormData(data);
-                setCanEdit(data.created_by === user.id);
+                const isCreator = data.created_by === user.id;
+                const isAdmin = userRole === 'admin' || userRole === 'owner';
+                setCanEdit(isCreator || isAdmin);
+
+                // Store creator name for display
+                const creator = data.profiles?.full_name || data.profiles?.email || 'Unknown';
+                setCreatorName(creator);
             }
             setLoading(false);
         }
@@ -290,17 +311,22 @@ const CreatePost = () => {
                 }
 
                 .doc-editor {
-                    padding: 60px 100px;
+                    padding: 40px;
                     overflow-y: auto;
-                    background: white;
+                    background: #f1f5f9;
                 }
 
                 .doc-container {
-                    max-width: 800px;
+                    max-width: 850px;
                     margin: 0 auto;
                     display: flex;
                     flex-direction: column;
                     gap: 40px;
+                    background: white;
+                    padding: 80px 100px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+                    border-radius: 2px;
+                    min-height: 1000px;
                 }
 
                 .form-group {
@@ -365,7 +391,7 @@ const CreatePost = () => {
 
                 .doc-textarea {
                     width: 100%;
-                    min-height: 100px;
+                    min-height: 40px;
                     border: none;
                     outline: none;
                     font-size: 16px;
@@ -377,12 +403,14 @@ const CreatePost = () => {
                 }
 
                 .doc-textarea.script {
-                    min-height: 300px;
-                    background: #fafafa;
-                    padding: 20px;
-                    border-radius: 12px;
-                    font-family: 'Courier New', monospace;
-                    font-size: 15px;
+                    min-height: 500px;
+                    background: white;
+                    padding: 0;
+                    border-radius: 0;
+                    font-family: 'Inter', sans-serif;
+                    font-size: 16px;
+                    border: none;
+                    line-height: 1.8;
                 }
 
                 .doc-section {
@@ -414,6 +442,17 @@ const CreatePost = () => {
                     .doc-editor {
                         padding: 40px;
                     }
+                }
+
+                .creator-tag-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-top: -30px;
+                    margin-bottom: 10px;
+                    color: #94a3b8;
+                    font-size: 13px;
+                    font-weight: 600;
                 }
             `}</style>
 
@@ -591,6 +630,48 @@ const CreatePost = () => {
                         />
                     </div>
 
+                    <div className="form-group">
+                        <label className="sidebar-label">
+                            Hashtags
+                        </label>
+                        <textarea
+                            className="sidebar-input"
+                            style={{ height: '80px', resize: 'none', fontStyle: 'italic' }}
+                            placeholder="#hashtags"
+                            value={formData.hashtags}
+                            readOnly={!canEdit}
+                            onChange={(e) => setFormData({ ...formData, hashtags: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="sidebar-label">
+                            Reference Links
+                        </label>
+                        <textarea
+                            className="sidebar-input"
+                            style={{ height: '120px', resize: 'none' }}
+                            placeholder="https://..."
+                            value={formData.reference_link}
+                            readOnly={!canEdit}
+                            onChange={(e) => setFormData({ ...formData, reference_link: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="sidebar-label">
+                            Internal Notes
+                        </label>
+                        <textarea
+                            className="sidebar-input"
+                            style={{ height: '80px', resize: 'none' }}
+                            placeholder="Drafting notes..."
+                            value={formData.notes}
+                            readOnly={!canEdit}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </div>
+
                     <div
                         className="form-group"
                         style={{
@@ -655,6 +736,13 @@ const CreatePost = () => {
                                     }
                                 />
 
+                                {creatorName && (
+                                    <div className="creator-tag-row">
+                                        <Users size={14} />
+                                        <span>Created by {creatorName}</span>
+                                    </div>
+                                )}
+
                                 <div className="doc-section">
                                     <label className="doc-section-label">
                                         <FileText size={16} />
@@ -706,86 +794,6 @@ const CreatePost = () => {
                                                         .value,
                                             })
                                         }
-                                    />
-                                </div>
-
-                                <div className="doc-section">
-                                    <label className="doc-section-label">
-                                        <Hash size={16} />
-                                        Hashtags
-                                    </label>
-
-                                    <textarea
-                                        className="doc-textarea"
-                                        placeholder="#hashtags"
-                                        value={
-                                            formData.hashtags
-                                        }
-                                        readOnly={!canEdit}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                hashtags:
-                                                    e.target
-                                                        .value,
-                                            })
-                                        }
-                                        style={{
-                                            height: '60px',
-                                        }}
-                                    />
-                                </div>
-
-                                <div className="doc-section">
-                                    <label className="doc-section-label">
-                                        <LinkIcon
-                                            size={16}
-                                        />
-                                        Reference Links
-                                    </label>
-
-                                    <input
-                                        className="sidebar-input"
-                                        placeholder="https://..."
-                                        value={
-                                            formData.reference_link
-                                        }
-                                        readOnly={!canEdit}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                reference_link:
-                                                    e.target
-                                                        .value,
-                                            })
-                                        }
-                                    />
-                                </div>
-
-                                <div className="doc-section">
-                                    <label className="doc-section-label">
-                                        <Info size={16} />
-                                        Internal Notes
-                                    </label>
-
-                                    <textarea
-                                        className="doc-textarea"
-                                        placeholder="Add internal notes..."
-                                        value={
-                                            formData.notes
-                                        }
-                                        readOnly={!canEdit}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                notes:
-                                                    e.target
-                                                        .value,
-                                            })
-                                        }
-                                        style={{
-                                            height: '80px',
-                                        }}
                                     />
                                 </div>
                             </>

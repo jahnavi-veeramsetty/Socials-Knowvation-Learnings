@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink, useParams, useNavigate } from 'react-router-dom';
+import logo from '../../assets/logo.png';
+import { supabase } from '../../supabase/supabase';
 import { 
     LayoutDashboard, 
     CalendarDays, 
@@ -11,12 +13,21 @@ import {
     Share2,
     ChevronDown,
     ChevronUp,
-    Hash
+    Hash,
+    PanelLeft
 } from 'lucide-react';
 
 const SideBar = () => {
     const { orgId } = useParams();
+    const navigate = useNavigate();
     const [socialsOpen, setSocialsOpen] = useState(false);
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (!error) {
+            navigate('/login');
+        }
+    };
 
     const menuItems = [
         { name: 'Dashboard', path: `/org/${orgId}/dashboard`, icon: <LayoutDashboard size={18} /> },
@@ -50,13 +61,26 @@ const SideBar = () => {
                 }
 
                 .sidebar-logo {
-                    color: #002B72;
-                    font-size: 22px;
-                    font-weight: 900;
-                    margin-bottom: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
                     margin-bottom: 32px;
-                    padding-left: 14px;
-                    letter-spacing: -1px;
+                    padding: 0 10px;
+                }
+
+                .logo-img {
+                    height: 26px;
+                    object-fit: contain;
+                }
+
+                .toggle-icon {
+                    color: #94a3b8;
+                    cursor: pointer;
+                    transition: color 0.2s;
+                }
+
+                .toggle-icon:hover {
+                    color: #002B72;
                 }
 
                 .nav-list {
@@ -169,7 +193,10 @@ const SideBar = () => {
                 }
             `}</style>
 
-            <div className="sidebar-logo">Knowvation</div>
+            <div className="sidebar-logo">
+                <img src={logo} alt="Knowvation" className="logo-img" />
+                <PanelLeft size={20} className="toggle-icon" />
+            </div>
 
             <nav>
                 <ul className="nav-list">
@@ -214,7 +241,7 @@ const SideBar = () => {
             </nav>
 
             <div className="sidebar-footer">
-                <button className="logout-btn">
+                <button className="logout-btn" onClick={handleLogout}>
                     <LogOut size={18} />
                     <span>Log Out</span>
                 </button>
