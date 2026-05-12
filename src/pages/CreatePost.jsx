@@ -11,7 +11,10 @@ import {
     StickyNote,
     Info,
     Users,
+    Image as ImageIcon,
 } from 'lucide-react';
+
+import ImageUploadSection from '../components/posts/ImageUploadSection';
 
 import { supabase } from '../supabase/supabase';
 import Toast from '../components/common/Toast';
@@ -41,6 +44,8 @@ const CreatePost = () => {
         hashtags: '',
         reference_link: '',
         notes: '',
+        images: [],
+        uploadedImages: [],
     });
 
     useEffect(() => {
@@ -74,7 +79,42 @@ const CreatePost = () => {
                 .single();
 
             if (data) {
-                setFormData(data);
+                setFormData((prev) => ({
+                    ...prev,
+
+                    social_account:
+                        data.social_account || 'KLM',
+
+                    post_type:
+                        data.post_type || 'reel',
+
+                    platforms:
+                        data.platforms || [],
+
+                    scheduled_date:
+                        data.scheduled_date || '',
+
+                    title:
+                        data.title || '',
+
+                    caption:
+                        data.caption || '',
+
+                    script:
+                        data.script || '',
+
+                    hashtags:
+                        data.hashtags || '',
+
+                    reference_link:
+                        data.reference_link || '',
+
+                    notes:
+                        data.notes || '',
+
+                    uploadedImages: [],
+                    images: [],
+                }));
                 const isCreator = data.created_by === user.id;
                 const isAdmin = userRole === 'admin' || userRole === 'owner';
                 setCanEdit(isCreator || isAdmin);
@@ -82,6 +122,64 @@ const CreatePost = () => {
                 // Store creator name for display
                 const creator = data.profiles?.full_name || data.profiles?.email || 'Unknown';
                 setCreatorName(creator);
+            }
+
+            // =====================================
+            // FETCH POST IMAGES
+            // =====================================
+
+            const {
+                data: imageData
+            } = await supabase
+                .from('post_images')
+                .select('*')
+                .eq('post_id', postId)
+                .order('sort_order');
+
+            if (imageData) {
+
+                const formattedImages =
+                    await Promise.all(
+
+                        imageData.map(async (img) => {
+
+                            const {
+                                data: signedData,
+                                error: signedError
+                            } = await supabase
+                                .storage
+                                .from('post-images')
+                                .createSignedUrl(
+                                    img.image_path,
+                                    60 * 60 * 24
+                                );
+
+                            if (signedError) {
+
+                                console.error(signedError);
+
+                                return null;
+                            }
+
+                            return {
+                                url: signedData.signedUrl,
+                                name: img.image_path,
+                            };
+                        })
+                    );
+
+                const validImages =
+                    formattedImages.filter(Boolean);
+
+                setFormData((prev) => ({
+                    ...prev,
+
+                    uploadedImages:
+                        validImages,
+
+                    images:
+                        validImages,
+                }));
             }
             setLoading(false);
         }
@@ -114,6 +212,10 @@ const CreatePost = () => {
                 return;
             }
 
+            // =====================================
+            // POST DATA
+            // =====================================
+
             const postData = {
                 organization_id: orgId,
                 created_by: currentUserId,
@@ -132,9 +234,9 @@ const CreatePost = () => {
 
             let savedPostId = postId;
 
-            // =========================
-            // UPDATE EXISTING POST
-            // =========================
+            // =====================================
+            // UPDATE POST
+            // =====================================
 
             if (postId) {
 
@@ -155,12 +257,11 @@ const CreatePost = () => {
 
                     return;
                 }
-
             }
 
-            // =========================
-            // CREATE NEW POST
-            // =========================
+            // =====================================
+            // CREATE POST
+            // =====================================
 
             else {
 
@@ -188,9 +289,105 @@ const CreatePost = () => {
                 savedPostId = data.id;
             }
 
-            // =========================
+            // =====================================
+            // UPLOAD IMAGES
+            // =====================================
+
+            if (formData.images?.length > 0) {
+
+                // remove old images first if editing
+
+                if (postId) {
+
+                    const {
+                        data: oldImages
+                    } = await supabase
+                        .from('post_images')
+                        .select('*')
+                        .eq('post_id', postId);
+
+                    if (oldImages?.length > 0) {
+
+                        for (const img of oldImages) {
+
+                            await supabase
+                                .storage
+                                .from('post-images')
+                                .remove([img.image_path]);
+                        }
+
+                        await supabase
+                            .from('post_images')
+                            .delete()
+                            .eq('post_id', postId);
+                    }
+                }
+
+                // upload new images
+
+                for (let i = 0; i < formData.images.length; i++) {
+
+                    const image = formData.images[i];
+
+                    // skip already uploaded images
+
+                    if (!image.file) continue;
+
+                    const file = image.file;
+
+                    const filePath =
+                        `${orgId}/${savedPostId}/${Date.now()}-${file.name}`;
+
+                    const {
+                        error: uploadError
+                    } = await supabase
+                        .storage
+                        .from('post-images')
+                        .upload(filePath, file);
+
+                    if (uploadError) {
+
+                        console.error(uploadError);
+
+                        alert(uploadError.message);
+
+                        continue;
+                    }
+
+                    const {
+                        data: signedUrlData,
+                        error: signedUrlError
+                    } = await supabase
+                        .storage
+                        .from('post-images')
+                        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+
+                    if (signedUrlError) {
+
+                        console.error(signedUrlError);
+
+                        continue;
+                    }
+
+                    const publicUrl =
+                        signedUrlData.signedUrl;
+
+                    await supabase
+                        .from('post_images')
+                        .insert([
+                            {
+                                post_id: savedPostId,
+                                image_url: '',
+                                image_path: filePath,
+                                sort_order: i,
+                            }
+                        ]);
+                }
+            }
+
+            // =====================================
             // ACTIVITY LOG
-            // =========================
+            // =====================================
 
             if (status === 'pending review') {
 
@@ -202,14 +399,15 @@ const CreatePost = () => {
                             user_id: currentUserId,
                             post_id: savedPostId,
                             action_type: 'submit',
-                            action_text: `submitted "${formData.title || 'Untitled'}"`
+                            action_text:
+                                `submitted "${formData.title || 'Untitled'}"`
                         }
                     ]);
             }
 
-            // =========================
+            // =====================================
             // SUCCESS
-            // =========================
+            // =====================================
 
             navigate(`/org/${orgId}/posts`);
 
@@ -832,6 +1030,21 @@ const CreatePost = () => {
                                         }
                                     />
                                 </div>
+
+                                <ImageUploadSection
+                                    initialImages={
+                                        formData.uploadedImages?.length > 0
+                                            ? formData.uploadedImages
+                                            : formData.images || []
+                                    }
+                                    readOnly={!canEdit}
+                                    onImagesChange={(newImages) =>
+                                        setFormData({
+                                            ...formData,
+                                            images: newImages,
+                                        })
+                                    }
+                                />
                             </>
                         )}
                     </div>
