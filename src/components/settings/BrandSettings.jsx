@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Palette, Pipette } from 'lucide-react';
 import { HexColorPicker } from "react-colorful";
 
-const BrandSettings = ({ brandColors, setBrandColors }) => {
+const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
     const [activeTab, setActiveTab] = useState('KLM');
 
     const accounts = [
@@ -45,6 +45,19 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
                     font-size: 14px;
                     color: #64748b;
                     margin: 4px 0 0;
+                }
+                .readonly-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: rgba(59, 130, 246, 0.1);
+                    color: #3b82f6;
+                    padding: 4px 10px;
+                    border-radius: 8px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
 
                 .picker-container {
@@ -171,25 +184,31 @@ const BrandSettings = ({ brandColors, setBrandColors }) => {
 
             <div className="section-header">
                 <Palette size={22} color="#002B72" />
-                <div>
-                    <h2>Brand Colors</h2>
-                    <p>Select a card below, then use the Canva-style picker to set its color.</p>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                        <h2>Brand Colors</h2>
+                        <p>Select a card below, then use the Canva-style picker to set its color.</p>
+                    </div>
+                    {readOnly && <span className="readonly-badge">View Only</span>}
                 </div>
             </div>
 
             <div className="picker-container">
-                <HexColorPicker 
-                    color={brandColors[activeTab] || '#002B72'} 
-                    onChange={handleColorChange} 
-                />
+                <div style={readOnly ? { pointerEvents: 'none', opacity: 0.6 } : {}}>
+                    <HexColorPicker 
+                        color={brandColors[activeTab] || '#002B72'} 
+                        onChange={handleColorChange} 
+                    />
+                </div>
                 
-                <div className="hex-input-section">
+                <div className="hex-input-section" style={readOnly ? { opacity: 0.6 } : {}}>
                     <span>#</span>
                     <input 
                         className="hex-input-field"
                         value={(brandColors[activeTab] || '#002B72').replace('#', '')}
                         onChange={(e) => handleColorChange('#' + e.target.value)}
                         placeholder="FFFFFF"
+                        disabled={readOnly}
                     />
                     <Pipette size={18} color="#94a3b8" />
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GeneralSettings = ({ orgName, setOrgName }) => {
+const GeneralSettings = ({ orgName, setOrgName, readOnly = false }) => {
     return (
         <div className="settings-section">
             <style>{`
@@ -16,6 +16,19 @@ const GeneralSettings = ({ orgName, setOrgName }) => {
                 .section-header p {
                     color: #64748b;
                     font-size: 14px;
+                }
+                .readonly-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    background: rgba(59, 130, 246, 0.1);
+                    color: #3b82f6;
+                    padding: 4px 10px;
+                    border-radius: 8px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
                 .settings-card {
                     background: #0a1936;
@@ -53,7 +66,10 @@ const GeneralSettings = ({ orgName, setOrgName }) => {
             `}</style>
 
             <div className="section-header">
-                <h2>Organization Settings</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h2>Organization Settings</h2>
+                    {readOnly && <span className="readonly-badge">View Only</span>}
+                </div>
                 <p>Manage your organization's core information.</p>
             </div>
 
@@ -65,6 +81,8 @@ const GeneralSettings = ({ orgName, setOrgName }) => {
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
                         placeholder="Organization Name"
+                        disabled={readOnly}
+                        style={readOnly ? { background: 'rgba(255, 255, 255, 0.02)', color: '#64748b' } : {}}
                     />
                 </div>
             </div>

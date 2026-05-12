@@ -22,18 +22,21 @@ const Settings = () => {
         KLC: '#0ea5e9'
     });
     const [allOrgs, setAllOrgs] = useState([]);
+    const [userRole, setUserRole] = useState('member');
     const [notification, setNotification] = useState(null);
-    
+
     // Initial data to check for changes
-    const [initialData, setInitialData] = useState({ 
-        fullName: '', 
+    const [initialData, setInitialData] = useState({
+        fullName: '',
         orgName: '',
         brandColors: { KLM: '#002B72', KLS: '#4f46e5', KLC: '#0ea5e9' }
     });
-    
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
+
+    const canEditOrg = userRole === 'admin' || userRole === 'owner';
 
     useEffect(() => {
         if (orgId) {
@@ -44,12 +47,15 @@ const Settings = () => {
     // Check for changes
     useEffect(() => {
         if (!loading) {
-            const changed = fullName !== initialData.fullName || 
-                           orgName !== initialData.orgName ||
-                           JSON.stringify(brandColors) !== JSON.stringify(initialData.brandColors);
-            setHasChanges(changed);
+            const profileChanged = fullName !== initialData.fullName;
+            const orgChanged = canEditOrg && (
+                orgName !== initialData.orgName ||
+                JSON.stringify(brandColors) !== JSON.stringify(initialData.brandColors)
+            );
+
+            setHasChanges(profileChanged || orgChanged);
         }
-    }, [fullName, orgName, brandColors, initialData, loading]);
+    }, [fullName, orgName, brandColors, initialData, loading, canEditOrg]);
 
     // Browser-level navigation guard
     useEffect(() => {
@@ -67,6 +73,18 @@ const Settings = () => {
         setLoading(true);
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+
+        // Fetch User Role
+        const { data: memberData } = await supabase
+            .from('organization_members')
+            .select('role')
+            .eq('organization_id', orgId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (memberData) {
+            setUserRole(memberData.role);
+        }
 
         // Fetch Profile
         const { data: profile } = await supabase
@@ -133,28 +151,33 @@ const Settings = () => {
         const { data: { user } } = await supabase.auth.getUser();
 
         try {
-            // Update Profile
+            // 1. Always update Profile (Members can do this too)
             const { error: profileErr } = await supabase
                 .from('profiles')
-                .update({ full_name: fullName })
+                .update({
+                    full_name: fullName,
+                    email: user.email
+                })
                 .eq('id', user.id);
 
             if (profileErr) throw profileErr;
 
-            // Update Org
-            const { error: orgErr } = await supabase
-                .from('organizations')
-                .update({ 
-                    name: orgName,
-                    brand_colors: brandColors 
-                })
-                .eq('id', orgId);
+            // 2. Only update Org if user is Admin/Owner
+            if (canEditOrg) {
+                const { error: orgErr } = await supabase
+                    .from('organizations')
+                    .update({
+                        name: orgName,
+                        brand_colors: brandColors
+                    })
+                    .eq('id', orgId);
 
-            if (orgErr) throw orgErr;
+                if (orgErr) throw orgErr;
+            }
 
             setInitialData({ fullName, orgName, brandColors });
             setHasChanges(false);
-            
+
             if (blocker.state === "blocked") {
                 blocker.proceed();
             } else {
@@ -336,7 +359,7 @@ const Settings = () => {
 
             {/* Confirmation Modal */}
             {blocker.state === "blocked" && (
-                <ConfirmModal 
+                <ConfirmModal
                     title="Unsaved Changes"
                     message="You have unsaved changes. Would you like to save them before leaving this page?"
                     onConfirm={handleSave}
@@ -350,7 +373,7 @@ const Settings = () => {
                     <SettingsIcon size={28} color="#002B72" />
                     <h1>Settings</h1>
                 </div>
-                
+
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {hasChanges && (
                         <div className="unsaved-warning">
@@ -358,9 +381,9 @@ const Settings = () => {
                             Unsaved Changes
                         </div>
                     )}
-                    <button 
-                        className="global-save-btn" 
-                        onClick={handleSave} 
+                    <button
+                        className="global-save-btn"
+                        onClick={handleSave}
                         disabled={saving || !hasChanges}
                     >
                         <Save size={18} />
@@ -370,20 +393,22 @@ const Settings = () => {
             </div>
 
             <div className="settings-content-stack">
-                <ProfileSettings 
-                    email={email} 
-                    fullName={fullName} 
-                    setFullName={setFullName} 
-                />
-                
-                <GeneralSettings 
-                    orgName={orgName} 
-                    setOrgName={setOrgName} 
+                <ProfileSettings
+                    email={email}
+                    fullName={fullName}
+                    setFullName={setFullName}
                 />
 
-                <BrandSettings 
+                <GeneralSettings
+                    orgName={orgName}
+                    setOrgName={setOrgName}
+                    readOnly={!canEditOrg}
+                />
+
+                <BrandSettings
                     brandColors={brandColors}
                     setBrandColors={setBrandColors}
+                    readOnly={!canEditOrg}
                 />
 
                 {allOrgs.length > 1 && (
@@ -392,7 +417,7 @@ const Settings = () => {
                         <p className="section-desc">Jump to another organization workspace</p>
                         <div className="org-list">
                             {allOrgs.map(org => (
-                                <button 
+                                <button
                                     key={org.id}
                                     className={`org-switch-item ${org.id === orgId ? 'current' : ''}`}
                                     onClick={() => org.id !== orgId && navigate(`/org/${org.id}/dashboard`)}
@@ -411,10 +436,10 @@ const Settings = () => {
             </div>
 
             {notification && (
-                <Toast 
-                    message={notification.message} 
-                    type={notification.type} 
-                    onClose={() => setNotification(null)} 
+                <Toast
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification(null)}
                 />
             )}
         </div>
