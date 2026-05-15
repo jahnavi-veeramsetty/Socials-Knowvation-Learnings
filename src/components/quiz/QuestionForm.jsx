@@ -23,6 +23,7 @@ const QuestionForm = ({ question, index, updateQuestion, removeQuestion }) => {
                     border: 1px solid #eee;
                     box-shadow: 0 4px 20px rgba(0, 43, 114, 0.05);
                     transition: all 0.3s ease;
+                    color-scheme: light;
                 }
                 .question-card:hover {
                     box-shadow: 0 8px 30px rgba(0, 43, 114, 0.1);
@@ -49,6 +50,8 @@ const QuestionForm = ({ question, index, updateQuestion, removeQuestion }) => {
                     color: #555;
                     outline: none;
                     cursor: pointer;
+                    background: white;
+                    color-scheme: light;
                 }
                 .difficulty-select:focus {
                     border-color: #002B72;
@@ -63,6 +66,9 @@ const QuestionForm = ({ question, index, updateQuestion, removeQuestion }) => {
                     outline: none;
                     transition: all 0.2s;
                     box-sizing: border-box;
+                    color: #333;
+                    background: white;
+                    color-scheme: light;
                 }
                 .question-input:focus {
                     border-color: #002B72;

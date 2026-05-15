@@ -21,6 +21,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Global Form Element Fixes */
+input, select, textarea {
+  color: inherit;
+  background: transparent;
+}
+
+option {
+  background-color: white;
+  color: #111111;
+}
+
 #root {
   width: 100%;
   margin: 0 auto;

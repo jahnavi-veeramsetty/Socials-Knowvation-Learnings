@@ -50,6 +50,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit, orgId }) => {
                     display: flex;
                     flex-direction: column;
                     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                    color-scheme: light;
                 }
                 .modal-header {
                     padding: 24px 32px;
@@ -107,6 +108,9 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit, orgId }) => {
                     font-size: 14px;
                     outline: none;
                     transition: all 0.2s;
+                    color: #333;
+                    background: white;
+                    color-scheme: light;
                 }
                 .form-input:focus, .form-select:focus, .form-textarea:focus {
                     border-color: #002B72;

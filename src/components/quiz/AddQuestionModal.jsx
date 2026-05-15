@@ -56,6 +56,7 @@ const AddQuestionModal = ({ isOpen, onClose, onAdd }) => {
                     position: relative;
                     box-shadow: 0 25px 50px -12px rgba(0, 43, 114, 0.25);
                     animation: slideUp 0.3s ease-out;
+                    color-scheme: light;
                 }
                 .close-btn {
                     position: absolute;
@@ -98,6 +99,9 @@ const AddQuestionModal = ({ isOpen, onClose, onAdd }) => {
                     outline: none;
                     transition: all 0.2s;
                     box-sizing: border-box;
+                    color: #333;
+                    background: white;
+                    color-scheme: light;
                 }
                 .modal-input:focus {
                     border-color: #002B72;
