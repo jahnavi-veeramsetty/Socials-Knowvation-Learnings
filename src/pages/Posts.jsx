@@ -44,6 +44,9 @@ const Posts = () => {
     const [statusFilter, setStatusFilter] =
         useState('all');
 
+    const [postTypeFilter, setPostTypeFilter] =
+        useState('all');
+
     useEffect(() => {
 
         fetchUserRole();
@@ -219,11 +222,17 @@ const Posts = () => {
                 post.status ===
                 statusFilter;
 
+            const matchesPostType =
+                postTypeFilter === 'all' ||
+                post.post_type ===
+                postTypeFilter;
+
             return (
                 matchesSearch &&
                 matchesSocial &&
                 matchesPlatform &&
-                matchesStatus
+                matchesStatus &&
+                matchesPostType
             );
         }
     );
@@ -497,6 +506,32 @@ const Posts = () => {
 
                         <option value="published">
                             Published
+                        </option>
+                    </select>
+
+                    <select
+                        className="filter-select"
+                        value={postTypeFilter}
+                        onChange={(e) =>
+                            setPostTypeFilter(
+                                e.target.value
+                            )
+                        }
+                    >
+                        <option value="all">
+                            All Types
+                        </option>
+
+                        <option value="reel">
+                            Reel
+                        </option>
+
+                        <option value="story">
+                            Story
+                        </option>
+
+                        <option value="carousel">
+                            Carousel
                         </option>
                     </select>
 

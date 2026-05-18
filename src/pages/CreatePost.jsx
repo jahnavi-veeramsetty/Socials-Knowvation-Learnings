@@ -12,6 +12,9 @@ import {
     Info,
     Users,
     Image as ImageIcon,
+    CheckCircle,
+    XCircle,
+    Trash2,
 } from 'lucide-react';
 
 import ImageUploadSection from '../components/posts/ImageUploadSection';
@@ -32,6 +35,8 @@ const CreatePost = () => {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [creatorName, setCreatorName] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [userRole, setUserRole] = useState(null);
+    const [postStatus, setPostStatus] = useState(null);
 
     const [formData, setFormData] = useState({
         social_account: 'KLM',
@@ -65,7 +70,8 @@ const CreatePost = () => {
             .eq('user_id', user.id)
             .single();
 
-        const userRole = memberData?.role;
+        const fetchedUserRole = memberData?.role;
+        setUserRole(fetchedUserRole);
 
         if (postId) {
             setLoading(true);
@@ -116,12 +122,13 @@ const CreatePost = () => {
                     images: [],
                 }));
                 const isCreator = data.created_by === user.id;
-                const isAdmin = userRole === 'admin' || userRole === 'owner';
+                const isAdmin = fetchedUserRole === 'admin' || fetchedUserRole === 'owner';
                 setCanEdit(isCreator || isAdmin);
 
                 // Store creator name for display
                 const creator = data.profiles?.full_name || data.profiles?.email || 'Unknown';
                 setCreatorName(creator);
+                setPostStatus(data.status);
             }
 
             // =====================================
@@ -389,8 +396,21 @@ const CreatePost = () => {
             // ACTIVITY LOG
             // =====================================
 
-            if (status === 'pending review') {
+            let actionType = null;
+            let actionText = null;
 
+            if (status === 'pending review' && postStatus !== 'pending review') {
+                actionType = 'submit';
+                actionText = `submitted "${formData.title || 'Untitled'}"`;
+            } else if (status === 'approved' && postStatus === 'pending review') {
+                actionType = 'approve';
+                actionText = `approved "${formData.title || 'Untitled'}"`;
+            } else if (status === 'draft' && postStatus === 'pending review') {
+                actionType = 'reject';
+                actionText = `rejected "${formData.title || 'Untitled'}"`;
+            }
+
+            if (actionType) {
                 await supabase
                     .from('activity_log')
                     .insert([
@@ -398,9 +418,8 @@ const CreatePost = () => {
                             organization_id: orgId,
                             user_id: currentUserId,
                             post_id: savedPostId,
-                            action_type: 'submit',
-                            action_text:
-                                `submitted "${formData.title || 'Untitled'}"`
+                            action_type: actionType,
+                            action_text: actionText
                         }
                     ]);
             }
@@ -424,6 +443,55 @@ const CreatePost = () => {
 
             setSaving(false);
 
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            setSaving(true);
+
+            if (formData.images?.length > 0) {
+                const { data: oldImages } = await supabase
+                    .from('post_images')
+                    .select('*')
+                    .eq('post_id', postId);
+
+                if (oldImages?.length > 0) {
+                    for (const img of oldImages) {
+                        await supabase
+                            .storage
+                            .from('post-images')
+                            .remove([img.image_path]);
+                    }
+                }
+            }
+
+            const { error } = await supabase
+                .from('posts')
+                .delete()
+                .eq('id', postId);
+
+            if (error) throw error;
+
+            await supabase
+                .from('activity_log')
+                .insert([{
+                    organization_id: orgId,
+                    user_id: currentUserId,
+                    post_id: postId,
+                    action_type: 'delete',
+                    action_text: `deleted "${formData.title || 'Untitled'}"`
+                }]);
+
+            navigate(`/org/${orgId}/posts`);
+        } catch (err) {
+            console.error(err);
+            setNotification({ message: 'Error deleting post', type: 'error' });
+            setSaving(false);
         }
     };
 
@@ -704,35 +772,72 @@ const CreatePost = () => {
                     Back to Posts
                 </button>
 
-                {canEdit && (
+                {(canEdit || (postStatus === 'pending review' && (userRole === 'admin' || userRole === 'owner'))) && (
                     <div className="header-actions">
-                        <button
-                            className="action-btn btn-secondary"
-                            onClick={() =>
-                                handleSave('draft')
-                            }
-                            disabled={saving}
-                        >
-                            <Save size={18} />
-                            {saving
-                                ? 'Saving...'
-                                : 'Save Draft'}
-                        </button>
+                        {postId && canEdit && (
+                            <button
+                                className="action-btn"
+                                style={{ background: 'transparent', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.2)' }}
+                                onClick={handleDelete}
+                                disabled={saving}
+                            >
+                                <Trash2 size={18} />
+                                Delete
+                            </button>
+                        )}
+                        
+                        {postStatus === 'pending review' && (userRole === 'admin' || userRole === 'owner') ? (
+                            <>
+                                <button
+                                    className="action-btn"
+                                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ff4d4f', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                                    onClick={() => handleSave('draft')}
+                                    disabled={saving}
+                                >
+                                    <XCircle size={18} />
+                                    {saving ? 'Processing...' : 'Reject'}
+                                </button>
+                                
+                                <button
+                                    className="action-btn btn-secondary"
+                                    onClick={() => handleSave('pending review')}
+                                    disabled={saving}
+                                >
+                                    <Save size={18} />
+                                    {saving ? 'Saving...' : 'Save Edits'}
+                                </button>
 
-                        <button
-                            className="action-btn btn-primary"
-                            onClick={() =>
-                                handleSave(
-                                    'pending review'
-                                )
-                            }
-                            disabled={saving}
-                        >
-                            <Send size={18} />
-                            {saving
-                                ? 'Submitting...'
-                                : 'Submit Post'}
-                        </button>
+                                <button
+                                    className="action-btn"
+                                    style={{ background: '#10b981', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
+                                    onClick={() => handleSave('approved')}
+                                    disabled={saving}
+                                >
+                                    <CheckCircle size={18} />
+                                    {saving ? 'Processing...' : 'Approve'}
+                                </button>
+                            </>
+                        ) : canEdit ? (
+                            <>
+                                <button
+                                    className="action-btn btn-secondary"
+                                    onClick={() => handleSave('draft')}
+                                    disabled={saving}
+                                >
+                                    <Save size={18} />
+                                    {saving ? 'Saving...' : 'Save Draft'}
+                                </button>
+
+                                <button
+                                    className="action-btn btn-primary"
+                                    onClick={() => handleSave('pending review')}
+                                    disabled={saving}
+                                >
+                                    <Send size={18} />
+                                    {saving ? 'Submitting...' : 'Submit Post'}
+                                </button>
+                            </>
+                        ) : null}
                     </div>
                 )}
                 {!canEdit && (

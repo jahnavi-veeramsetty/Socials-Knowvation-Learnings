@@ -77,6 +77,15 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
                     color: white;
                     text-transform: uppercase;
                 }
+                .type-badge {
+                    font-size: 11px;
+                    font-weight: 800;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #cbd5e1;
+                    text-transform: uppercase;
+                }
                 .status-badge {
                     display: flex;
                     align-items: center;
@@ -176,7 +185,12 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
             `}</style>
 
             <div className="card-top">
-                <span className="social-badge">{post.social_account}</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <span className="social-badge">{post.social_account}</span>
+                    {post.post_type && (
+                        <span className="type-badge">{post.post_type}</span>
+                    )}
+                </div>
                 <div
                     className="status-badge"
                     style={{ background: statusStyle.bg, color: statusStyle.icon ? statusStyle.color : '#64748b' }}

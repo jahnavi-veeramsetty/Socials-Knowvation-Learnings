@@ -65,6 +65,21 @@ const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId
                     color: #002B72;
                     text-transform: uppercase;
                 }
+                .social-acc-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                .type-badge {
+                    font-size: 10px;
+                    font-weight: 800;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    background: #f1f5f9;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    width: fit-content;
+                }
                 .post-info h4 {
                     margin: 0;
                     font-size: 14px;
@@ -134,7 +149,12 @@ const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId
                 }
             `}</style>
 
-            <div className="social-acc">{post.social_account}</div>
+            <div className="social-acc-group">
+                <div className="social-acc">{post.social_account}</div>
+                {post.post_type && (
+                    <div className="type-badge">{post.post_type}</div>
+                )}
+            </div>
             
             <div className="post-info">
                 <h4>{post.title}</h4>

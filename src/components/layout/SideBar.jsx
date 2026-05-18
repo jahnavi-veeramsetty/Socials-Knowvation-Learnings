@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import { supabase } from '../../supabase/supabase';
@@ -21,7 +21,14 @@ const SideBar = () => {
     const { orgId } = useParams();
     const navigate = useNavigate();
     const [socialsOpen, setSocialsOpen] = useState(false);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        const saved = localStorage.getItem('sidebar_collapsed');
+        return saved === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('sidebar_collapsed', isCollapsed);
+    }, [isCollapsed]);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
