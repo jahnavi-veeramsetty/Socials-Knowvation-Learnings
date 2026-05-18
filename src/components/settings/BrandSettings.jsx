@@ -60,68 +60,129 @@ const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
                     letter-spacing: 0.5px;
                 }
 
+                .brand-settings-content {
+                    display: flex;
+                    gap: 32px;
+                    align-items: flex-start;
+                }
+
+                @media (max-width: 700px) {
+                    .brand-settings-content {
+                        flex-direction: column;
+                    }
+                    .picker-container {
+                        margin: 0 auto;
+                        width: 100%;
+                    }
+                }
+
                 .picker-container {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 20px;
                     background: #0a1936;
-                    padding: 40px;
-                    border-radius: 32px;
+                    padding: 24px;
+                    border-radius: 20px;
+                    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
                     border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    width: 320px;
+                    flex-shrink: 0;
                 }
 
                 /* Customizing react-colorful */
                 .react-colorful {
                     width: 100% !important;
-                    max-width: 400px;
-                    height: 240px !important;
-                    border-radius: 16px;
+                    height: 180px !important;
                 }
 
                 .react-colorful__saturation {
-                    border-bottom: 12px solid #0a1936;
-                    border-radius: 12px 12px 0 0;
+                    flex-grow: 1;
+                    border-radius: 8px 8px 0 0 !important;
+                    border-bottom: none !important;
+                    background-image: linear-gradient(transparent, #000), linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
                 }
 
                 .react-colorful__hue {
-                    height: 14px !important;
-                    border-radius: 10px;
+                    height: 16px !important;
+                    border-radius: 8px !important;
+                    margin-top: 16px;
+                    background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+                }
+                
+                .react-colorful__pointer {
+                    width: 24px !important;
+                    height: 24px !important;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
                 }
 
-                .hex-input-section {
+                .bottom-controls {
                     display: flex;
                     align-items: center;
                     gap: 12px;
+                    width: 100%;
+                    margin-top: 20px;
+                }
+                
+                .hex-input-wrapper {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 8px;
+                    padding: 8px 12px;
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 10px 20px;
-                    border-radius: 14px;
-                    border: 1.5px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                    width: 200px;
                 }
-
-                .hex-input-section span {
-                    font-weight: 800;
-                    color: #64748b;
+                
+                .color-preview-circle {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    flex-shrink: 0;
                 }
-
+                
                 .hex-input-field {
                     border: none;
                     outline: none;
                     font-family: 'Inter', sans-serif;
-                    font-weight: 700;
+                    font-weight: 600;
                     color: #ffffff;
                     width: 100%;
                     text-transform: uppercase;
-                    font-size: 15px;
+                    font-size: 14px;
                     background: transparent;
+                }
+                
+                .hex-input-field::selection {
+                    background: rgba(255, 255, 255, 0.2);
+                    color: white;
+                }
+                
+                .eyedropper-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 38px;
+                    height: 38px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #94a3b8;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                    transition: all 0.2s;
+                }
+
+                .eyedropper-btn:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #ffffff;
                 }
 
                 .account-cards-row {
+                    flex: 1;
                     display: grid;
-                    grid-template-columns: repeat(3, 1fr);
+                    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
                     gap: 16px;
                 }
 
@@ -187,50 +248,60 @@ const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                         <h2>Brand Colors</h2>
-                        <p>Select a card below, then use the Canva-style picker to set its color.</p>
+                        <p>Select a card below, then use the color picker to set its color.</p>
                     </div>
                     {readOnly && <span className="readonly-badge">View Only</span>}
                 </div>
             </div>
 
-            <div className="picker-container">
-                <div style={readOnly ? { pointerEvents: 'none', opacity: 0.6 } : {}}>
-                    <HexColorPicker 
-                        color={brandColors[activeTab] || '#002B72'} 
-                        onChange={handleColorChange} 
-                    />
-                </div>
-                
-                <div className="hex-input-section" style={readOnly ? { opacity: 0.6 } : {}}>
-                    <span>#</span>
-                    <input 
-                        className="hex-input-field"
-                        value={(brandColors[activeTab] || '#002B72').replace('#', '')}
-                        onChange={(e) => handleColorChange('#' + e.target.value)}
-                        placeholder="FFFFFF"
-                        disabled={readOnly}
-                    />
-                    <Pipette size={18} color="#94a3b8" />
-                </div>
-            </div>
-
-            <div className="account-cards-row">
-                {accounts.map(acc => (
-                    <div 
-                        key={acc.id} 
-                        className={`account-color-card ${activeTab === acc.id ? 'active' : ''}`}
-                        onClick={() => setActiveTab(acc.id)}
-                    >
-                        <div 
-                            className="preview-circle" 
-                            style={{ background: brandColors[acc.id] || '#002B72' }} 
+            <div className="brand-settings-content">
+                <div className="picker-container">
+                    <div style={{ width: '100%', ...(readOnly ? { pointerEvents: 'none', opacity: 0.6 } : {}) }}>
+                        <HexColorPicker
+                            color={brandColors[activeTab] || '#002B72'}
+                            onChange={handleColorChange}
                         />
-                        <div className="card-meta">
-                            <strong>{acc.id}</strong>
-                            <span>{acc.name}</span>
-                        </div>
                     </div>
-                ))}
+
+                    <div className="bottom-controls" style={readOnly ? { opacity: 0.6 } : {}}>
+                        <div className="hex-input-wrapper">
+                            <div className="color-preview-circle" style={{ background: brandColors[activeTab] || '#002B72' }} />
+                            <input
+                                className="hex-input-field"
+                                value={brandColors[activeTab] || '#002B72'}
+                                onChange={(e) => {
+                                    let val = e.target.value;
+                                    if (!val.startsWith('#') && val.length > 0) val = '#' + val;
+                                    handleColorChange(val);
+                                }}
+                                placeholder="#FFFFFF"
+                                disabled={readOnly}
+                            />
+                        </div>
+                        <button className="eyedropper-btn" disabled={readOnly}>
+                            <Pipette size={18} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="account-cards-row">
+                    {accounts.map(acc => (
+                        <div
+                            key={acc.id}
+                            className={`account-color-card ${activeTab === acc.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(acc.id)}
+                        >
+                            <div
+                                className="preview-circle"
+                                style={{ background: brandColors[acc.id] || '#002B72' }}
+                            />
+                            <div className="card-meta">
+                                <strong>{acc.id}</strong>
+                                <span>{acc.name}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

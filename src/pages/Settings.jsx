@@ -48,14 +48,12 @@ const Settings = () => {
     useEffect(() => {
         if (!loading) {
             const profileChanged = fullName !== initialData.fullName;
-            const orgChanged = canEditOrg && (
-                orgName !== initialData.orgName ||
-                JSON.stringify(brandColors) !== JSON.stringify(initialData.brandColors)
-            );
+            const orgChanged = canEditOrg && orgName !== initialData.orgName;
+            const brandChanged = userRole === 'owner' && JSON.stringify(brandColors) !== JSON.stringify(initialData.brandColors);
 
-            setHasChanges(profileChanged || orgChanged);
+            setHasChanges(profileChanged || orgChanged || brandChanged);
         }
-    }, [fullName, orgName, brandColors, initialData, loading, canEditOrg]);
+    }, [fullName, orgName, brandColors, initialData, loading, canEditOrg, userRole]);
 
     // Browser-level navigation guard
     useEffect(() => {
@@ -164,12 +162,14 @@ const Settings = () => {
 
             // 2. Only update Org if user is Admin/Owner
             if (canEditOrg) {
+                const orgUpdate = { name: orgName };
+                if (userRole === 'owner') {
+                    orgUpdate.brand_colors = brandColors;
+                }
+
                 const { error: orgErr } = await supabase
                     .from('organizations')
-                    .update({
-                        name: orgName,
-                        brand_colors: brandColors
-                    })
+                    .update(orgUpdate)
                     .eq('id', orgId);
 
                 if (orgErr) throw orgErr;
@@ -408,7 +408,7 @@ const Settings = () => {
                 <BrandSettings
                     brandColors={brandColors}
                     setBrandColors={setBrandColors}
-                    readOnly={!canEditOrg}
+                    readOnly={userRole !== 'owner'}
                 />
 
                 {allOrgs.length > 1 && (
