@@ -19,7 +19,7 @@ import { supabase } from '../supabase/supabase';
 const Calendar = () => {
     const { orgId } = useParams();
     const navigate = useNavigate();
-    const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 11)); // May 11, 2026 as per user
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [brandColors, setBrandColors] = useState({
@@ -115,7 +115,7 @@ const Calendar = () => {
         });
     };
 
-    const today = new Date(2026, 4, 11);
+    const today = new Date();
     const isToday = (day) => {
         return year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
     };
