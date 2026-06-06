@@ -7,14 +7,12 @@ import {
     LayoutGrid,
     List,
     Users,
-    X, // Added X icon for closing modal
+    X,
 } from 'lucide-react';
-
 import { supabase } from '../supabase/supabase';
 
 const Organizations = () => {
     const navigate = useNavigate();
-
     const [orgs, setOrgs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('grid');
@@ -28,40 +26,21 @@ const Organizations = () => {
 
     const fetchOrgs = async () => {
         setLoading(true);
-
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-            navigate('/login');
-            return;
-        }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { navigate('/login'); return; }
 
         const { data, error } = await supabase
             .from('organization_members')
-            .select(`
-                role,
-                organizations (
-                    id,
-                    name,
-                    created_at
-                )
-            `)
+            .select(`role, organizations (id, name, created_at)`)
             .eq('user_id', user.id);
 
-        if (error) {
-            console.error(error);
-            setLoading(false);
-            return;
-        }
+        if (error) { console.error(error); setLoading(false); return; }
 
         const formattedOrgs = await Promise.all(data.map(async (item) => {
             const { count } = await supabase
                 .from('organization_members')
                 .select('*', { count: 'exact', head: true })
                 .eq('organization_id', item.organizations.id);
-
             return {
                 id: item.organizations.id,
                 name: item.organizations.name,
@@ -78,54 +57,23 @@ const Organizations = () => {
     const handleCreateOrg = async (e) => {
         e.preventDefault();
         if (!newOrgName.trim()) return;
-
         setIsCreating(true);
 
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setIsCreating(false); return; }
 
-        if (!user) {
-            setIsCreating(false);
-            return;
-        }
-
-        // Create organization
         const { data: org, error: orgError } = await supabase
             .from('organizations')
-            .insert([
-                {
-                    name: newOrgName.trim(),
-                    created_by: user.id,
-                },
-            ])
-            .select()
-            .single();
+            .insert([{ name: newOrgName.trim(), created_by: user.id }])
+            .select().single();
 
-        if (orgError) {
-            console.error(orgError);
-            alert(orgError.message);
-            setIsCreating(false);
-            return;
-        }
+        if (orgError) { alert(orgError.message); setIsCreating(false); return; }
 
-        // Add creator as owner
         const { error: memberError } = await supabase
             .from('organization_members')
-            .insert([
-                {
-                    organization_id: org.id,
-                    user_id: user.id,
-                    role: 'owner',
-                },
-            ]);
+            .insert([{ organization_id: org.id, user_id: user.id, role: 'owner' }]);
 
-        if (memberError) {
-            console.error(memberError);
-            alert(memberError.message);
-            setIsCreating(false);
-            return;
-        }
+        if (memberError) { alert(memberError.message); setIsCreating(false); return; }
 
         setNewOrgName('');
         setIsModalOpen(false);
@@ -134,405 +82,35 @@ const Organizations = () => {
     };
 
     const handleSelectOrg = (org) => {
-        console.log('Selected Organization:', org);
         navigate(`/org/${org.id}/dashboard`);
     };
 
     return (
-        <div className="orgs-page">
-            <style>{`
-                .orgs-page {
-                    min-height: 100vh;
-                    background: #010D2C;
-                    padding: 40px 20px;
-                    font-family: 'Inter', sans-serif;
-                    color: #ffffff;
-                }
-
-                .container {
-                    max-width: 1000px;
-                    margin: 0 auto;
-                }
-
-                .header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 40px;
-                    gap: 20px;
-                }
-
-                .header-content h1 {
-                    color: #ffffff;
-                    font-size: 32px;
-                    font-weight: 800;
-                    margin: 0 0 8px;
-                    letter-spacing: -0.5px;
-                }
-
-                .header-content p {
-                    color: #64748b;
-                    font-size: 16px;
-                    margin: 0;
-                }
-
-                .actions {
-                    display: flex;
-                    gap: 12px;
-                    align-items: center;
-                }
-
-                .view-toggle {
-                    display: flex;
-                    background: #0a1936;
-                    padding: 4px;
-                    border-radius: 10px;
-                    gap: 4px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                }
-
-                .toggle-btn {
-                    padding: 8px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    border: none;
-                    background: transparent;
-                    color: #64748b;
-                }
-
-                .toggle-btn.active {
-                    background: #002B72;
-                    color: white;
-                    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-                }
-
-                .create-btn {
-                    background: #002B72;
-                    color: white;
-                    padding: 14px 20px;
-                    border-radius: 14px;
-                    font-weight: 600;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    border: none;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-                }
-
-                .create-btn:hover {
-                    background: #001f54;
-                    transform: translateY(-2px);
-                }
-
-                .orgs-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                    gap: 24px;
-                }
-
-                .orgs-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 16px;
-                }
-
-                .org-card {
-                    background: #0a1936;
-                    padding: 24px;
-                    border-radius: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 16px;
-                }
-
-                .org-card:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-                    border-color: #002B72;
-                }
-
-                .org-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                }
-
-                .org-icon {
-                    width: 54px;
-                    height: 54px;
-                    background: rgba(255, 255, 255, 0.03);
-                    border-radius: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #3b82f6;
-                    flex-shrink: 0;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                }
-
-                .org-details h3 {
-                    margin: 0;
-                    color: #ffffff;
-                    font-size: 18px;
-                    font-weight: 700;
-                }
-
-                .org-details p {
-                    margin: 6px 0 0;
-                    color: #64748b;
-                    font-size: 14px;
-                }
-
-                .org-team {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    color: #64748b;
-                    font-size: 13px;
-                    margin-top: 6px;
-                }
-
-                .org-meta {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding-top: 16px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.05);
-                }
-
-                .role-badge {
-                    background: rgba(59, 130, 246, 0.1);
-                    color: #3b82f6;
-                    padding: 5px 12px;
-                    border-radius: 999px;
-                    font-size: 12px;
-                    font-weight: 700;
-                    text-transform: capitalize;
-                }
-
-                .meta-date {
-                    color: #64748b;
-                    font-size: 13px;
-                }
-
-                .empty-state {
-                    background: #0a1936;
-                    padding: 80px 40px;
-                    border-radius: 32px;
-                    text-align: center;
-                    border: 2px dashed rgba(255, 255, 255, 0.05);
-                }
-
-                .empty-state h2 {
-                    color: #ffffff;
-                    margin: 20px 0 10px;
-                    font-size: 28px;
-                }
-
-                .empty-state p {
-                    color: #64748b;
-                    margin-bottom: 30px;
-                }
-
-                .loading-state {
-                    text-align: center;
-                    padding: 100px;
-                    color: #64748b;
-                }
-
-                @media (max-width: 700px) {
-                    .header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                    }
-
-                    .actions {
-                        width: 100%;
-                        justify-content: space-between;
-                    }
-
-                    .create-btn {
-                        flex: 1;
-                        justify-content: center;
-                    }
-
-                    .orgs-grid {
-                        grid-template-columns: 1fr;
-                    }
-                }
-
-                /* Modal Styles */
-                .modal-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0, 0, 0, 0.6);
-                    backdrop-filter: blur(8px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    padding: 20px;
-                    animation: fadeIn 0.2s ease-out;
-                }
-
-                .modal-content {
-                    background: #0a1936;
-                    width: 100%;
-                    max-width: 480px;
-                    border-radius: 28px;
-                    padding: 40px;
-                    position: relative;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                }
-
-                .modal-close {
-                    position: absolute;
-                    top: 24px;
-                    right: 24px;
-                    background: rgba(255, 255, 255, 0.02);
-                    border: none;
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    color: #64748b;
-                    transition: all 0.2s;
-                }
-
-                .modal-close:hover {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: #ffffff;
-                }
-
-                .modal-header h2 {
-                    color: #ffffff;
-                    font-size: 24px;
-                    font-weight: 800;
-                    margin: 0 0 8px;
-                }
-
-                .modal-header p {
-                    color: #64748b;
-                    font-size: 15px;
-                    margin: 0 0 32px;
-                }
-
-                .modal-form {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 24px;
-                }
-
-                .modal-input-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-
-                .modal-input-group label {
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: #cbd5e1;
-                    margin-left: 4px;
-                }
-
-                .modal-input {
-                    width: 100%;
-                    padding: 16px 20px;
-                    border-radius: 16px;
-                    border: 2px solid rgba(255, 255, 255, 0.05);
-                    background: rgba(255, 255, 255, 0.02);
-                    font-size: 16px;
-                    transition: all 0.2s;
-                    box-sizing: border-box;
-                    color: white;
-                }
-
-                .modal-input:focus {
-                    outline: none;
-                    border-color: #002B72;
-                    background: rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 0 0 4px rgba(0, 43, 114, 0.2);
-                }
-
-                .modal-actions {
-                    display: flex;
-                    gap: 12px;
-                    margin-top: 8px;
-                }
-
-                .cancel-btn {
-                    flex: 1;
-                    background: rgba(255, 255, 255, 0.05);
-                    color: #94a3b8;
-                    padding: 16px;
-                    border-radius: 16px;
-                    font-weight: 700;
-                    border: none;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .cancel-btn:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: #ffffff;
-                }
-
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                @keyframes slideUp {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `}</style>
-
-            <div className="container">
-                <div className="header">
-                    <div className="header-content">
-                        <h1>Your Organizations</h1>
-
-                        <p>
-                            Select an organization to continue or create a new one
-                        </p>
+        <div className="min-h-screen bg-light-bg py-10 px-5 font-sans text-slate-900">
+            <div className="max-w-[1000px] mx-auto">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-10 gap-5 flex-wrap">
+                    <div>
+                        <h1 className="text-slate-900 text-[32px] font-extrabold m-0 mb-2 tracking-[-0.5px]">Your Organizations</h1>
+                        <p className="text-slate-500 text-base m-0">Select an organization to continue or create a new one</p>
                     </div>
-
-                    <div className="actions">
-                        <div className="view-toggle">
+                    <div className="flex gap-3 items-center">
+                        <div className="flex bg-light-card p-1 rounded-[10px] gap-1 border border-slate-200">
                             <button
-                                className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''
-                                    }`}
+                                className={`p-2 rounded-lg cursor-pointer transition-all duration-200 flex items-center border-none ${viewMode === 'grid' ? 'bg-brand text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)]' : 'bg-transparent text-slate-500'}`}
                                 onClick={() => setViewMode('grid')}
                             >
                                 <LayoutGrid size={18} />
                             </button>
-
                             <button
-                                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''
-                                    }`}
+                                className={`p-2 rounded-lg cursor-pointer transition-all duration-200 flex items-center border-none ${viewMode === 'list' ? 'bg-brand text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)]' : 'bg-transparent text-slate-500'}`}
                                 onClick={() => setViewMode('list')}
                             >
                                 <List size={18} />
                             </button>
                         </div>
-
                         <button
-                            className="create-btn"
+                            className="bg-brand text-white py-3.5 px-5 rounded-2xl font-semibold flex items-center gap-2 border-none cursor-pointer transition-all duration-200 shadow-[0_8px_24px_rgba(0,0,0,0.3)] hover:bg-brand-hover hover:-translate-y-0.5"
                             onClick={() => setIsModalOpen(true)}
                         >
                             <Plus size={20} />
@@ -541,88 +119,52 @@ const Organizations = () => {
                     </div>
                 </div>
 
+                {/* Content */}
                 {loading ? (
-                    <div className="loading-state">
-                        <div
-                            className="org-icon"
-                            style={{ margin: '0 auto 20px' }}
-                        >
+                    <div className="text-center py-24 text-slate-500">
+                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-blue-400 border border-slate-200 mx-auto mb-5">
                             <Building2 size={28} />
                         </div>
-
                         <p>Loading organizations...</p>
                     </div>
                 ) : orgs.length > 0 ? (
-                    <div
-                        className={
-                            viewMode === 'grid'
-                                ? 'orgs-grid'
-                                : 'orgs-list'
-                        }
-                    >
+                    <div className={viewMode === 'grid' ? 'grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6' : 'flex flex-col gap-4'}>
                         {orgs.map((org) => (
                             <div
                                 key={org.id}
-                                className="org-card"
+                                className="bg-light-card p-6 rounded-3xl border border-slate-200 cursor-pointer transition-all duration-300 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] hover:border-brand"
                                 onClick={() => handleSelectOrg(org)}
                             >
-                                <div className="org-info">
-                                    <div className="org-icon">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-[54px] h-[54px] bg-slate-50 rounded-2xl flex items-center justify-center text-blue-400 shrink-0 border border-slate-200">
                                         <Building2 size={24} />
                                     </div>
-
-                                    <div className="org-details">
-                                        <h3>{org.name}</h3>
-
-                                        <div className="org-team">
+                                    <div className="flex-1">
+                                        <h3 className="m-0 text-slate-900 text-lg font-bold">{org.name}</h3>
+                                        <div className="flex items-center gap-1.5 text-slate-500 text-[13px] mt-1.5">
                                             <Users size={14} />
                                             <span>{org.memberCount} {org.memberCount === 1 ? 'member' : 'members'}</span>
                                         </div>
                                     </div>
-
-                                    {viewMode === 'list' && (
-                                        <div style={{ marginLeft: 'auto' }}>
-                                            <ChevronRight
-                                                size={20}
-                                                color="#ccc"
-                                            />
-                                        </div>
-                                    )}
+                                    {viewMode === 'list' && <ChevronRight size={20} color="#ccc" />}
                                 </div>
 
                                 {viewMode === 'grid' && (
-                                    <div className="org-meta">
-                                        <span className="role-badge">
-                                            {org.role}
-                                        </span>
-
-                                        <span className="meta-date">
-                                            {new Date(
-                                                org.created_at
-                                            ).toLocaleDateString()}
-                                        </span>
+                                    <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+                                        <span className="bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full text-xs font-bold capitalize">{org.role}</span>
+                                        <span className="text-slate-500 text-[13px]">{new Date(org.created_at).toLocaleDateString()}</span>
                                     </div>
                                 )}
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="empty-state">
-                        <Building2
-                            size={56}
-                            color="#002B72"
-                            opacity={0.3}
-                        />
-
-                        <h2>No Organizations Found</h2>
-
-                        <p>
-                            You haven't created or joined any organizations yet.
-                        </p>
-
+                    <div className="bg-light-card py-20 px-10 rounded-[32px] text-center border-2 border-dashed border-slate-200">
+                        <Building2 size={56} color="#002B72" opacity={0.3} />
+                        <h2 className="text-slate-900 mt-5 mb-2.5 text-[28px]">No Organizations Found</h2>
+                        <p className="text-slate-500 mb-8">You haven't created or joined any organizations yet.</p>
                         <button
-                            className="create-btn"
-                            style={{ margin: '0 auto' }}
+                            className="bg-brand text-white py-3.5 px-5 rounded-2xl font-semibold flex items-center gap-2 border-none cursor-pointer transition-all duration-200 shadow-[0_8px_24px_rgba(0,0,0,0.3)] hover:bg-brand-hover hover:-translate-y-0.5 mx-auto"
                             onClick={() => setIsModalOpen(true)}
                         >
                             <Plus size={20} />
@@ -632,54 +174,47 @@ const Organizations = () => {
                 )}
             </div>
 
-            {/* Create Organization Modal */}
+            {/* Modal */}
             {isModalOpen && (
-                <div className="modal-overlay" onClick={() => !isCreating && setIsModalOpen(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                            className="modal-close" 
-                            onClick={() => setIsModalOpen(false)}
-                            disabled={isCreating}
-                        >
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-[1000] p-5 animate-[fadeIn_0.2s_ease-out]"
+                    onClick={() => !isCreating && setIsModalOpen(false)}>
+                    <div className="bg-light-card w-full max-w-[480px] rounded-[28px] p-10 relative shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-slate-200 animate-[slideUp_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+                        onClick={e => e.stopPropagation()}>
+                        <button
+                            className="absolute top-6 right-6 bg-slate-50 border-none w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
+                            onClick={() => setIsModalOpen(false)} disabled={isCreating}>
                             <X size={20} />
                         </button>
 
-                        <div className="modal-header">
-                            <h2>Create New Organization</h2>
-                            <p>Build a home for your team's projects and members.</p>
+                        <div className="mb-8">
+                            <h2 className="text-slate-900 text-2xl font-extrabold m-0 mb-2">Create New Organization</h2>
+                            <p className="text-slate-500 text-[15px] m-0">Build a home for your team's projects and members.</p>
                         </div>
 
-                        <form className="modal-form" onSubmit={handleCreateOrg}>
-                            <div className="modal-input-group">
-                                <label htmlFor="orgName">Organization Name</label>
+                        <form className="flex flex-col gap-6" onSubmit={handleCreateOrg}>
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="orgName" className="text-sm font-semibold text-slate-600 ml-1">Organization Name</label>
                                 <input
-                                    id="orgName"
-                                    type="text"
-                                    className="modal-input"
+                                    id="orgName" type="text"
+                                    className="w-full py-4 px-5 rounded-2xl border-2 border-slate-200 bg-slate-50 text-base transition-all duration-200 box-border text-slate-900 outline-none focus:border-brand focus:bg-slate-100 focus:shadow-[0_0_0_4px_rgba(0,43,114,0.2)]"
                                     placeholder="e.g. Acme Corporation"
                                     value={newOrgName}
                                     onChange={(e) => setNewOrgName(e.target.value)}
-                                    autoFocus
-                                    required
-                                    disabled={isCreating}
+                                    autoFocus required disabled={isCreating}
                                 />
                             </div>
 
-                            <div className="modal-actions">
-                                <button 
-                                    type="button" 
-                                    className="cancel-btn"
-                                    onClick={() => setIsModalOpen(false)}
-                                    disabled={isCreating}
-                                >
+                            <div className="flex gap-3 mt-2">
+                                <button
+                                    type="button"
+                                    className="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold border-none cursor-pointer transition-all duration-200 hover:bg-slate-200 hover:text-slate-900"
+                                    onClick={() => setIsModalOpen(false)} disabled={isCreating}>
                                     Cancel
                                 </button>
-                                <button 
-                                    type="submit" 
-                                    className="create-btn" 
-                                    style={{ flex: 2, justifyContent: 'center' }}
-                                    disabled={isCreating}
-                                >
+                                <button
+                                    type="submit"
+                                    className="flex-[2] bg-brand text-white py-4 rounded-2xl font-bold border-none cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 hover:bg-brand-hover hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={isCreating}>
                                     {isCreating ? 'Creating...' : 'Create Organization'}
                                 </button>
                             </div>

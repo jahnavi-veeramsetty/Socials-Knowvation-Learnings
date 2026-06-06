@@ -1,648 +1,344 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-
-import {
-    Search,
-    Plus,
-    LayoutGrid,
-    List,
-} from 'lucide-react';
-
+import { useParams, useNavigate } from 'react-router-dom';
+import { Search, Plus, LayoutGrid, List, Trash2, CheckCircle, X } from 'lucide-react';
 import { supabase } from '../supabase/supabase';
-
+import CustomSelect from '../components/common/CustomSelect';
+import DeletePostModal from '../components/posts/DeletePostModal';
 import PostCard from '../components/posts/PostCard';
 import PostListRow from '../components/posts/PostListRow';
 
 const Posts = () => {
-
     const { orgId } = useParams();
+    const navigate = useNavigate();
+    const [viewMode, setViewMode] = useState('grid');
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [brandColors, setBrandColors] = useState({
+        KLM: '#002B72',
+        KLS: '#4f46e5',
+        KLC: '#0ea5e9'
+    });
+    const [userRole, setUserRole] = useState('member');
+    const [userId, setUserId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [socialFilter, setSocialFilter] = useState('all');
+    const [platformFilter, setPlatformFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [postTypeFilter, setPostTypeFilter] = useState('all');
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [selectedPosts, setSelectedPosts] = useState([]);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    const [viewMode, setViewMode] =
-        useState('grid');
-
-    const [posts, setPosts] =
-        useState([]);
-
-    const [loading, setLoading] =
-        useState(true);
-
-    const [userRole, setUserRole] =
-        useState('member');
-
-    const [userId, setUserId] =
-        useState(null);
-
-    const [searchQuery, setSearchQuery] =
-        useState('');
-
-    const [socialFilter, setSocialFilter] =
-        useState('all');
-
-    const [platformFilter, setPlatformFilter] =
-        useState('all');
-
-    const [statusFilter, setStatusFilter] =
-        useState('all');
-
-    const [postTypeFilter, setPostTypeFilter] =
-        useState('all');
-
-    useEffect(() => {
-
-        fetchUserRole();
-
+    useEffect(() => { 
+        fetchUserRole(); 
+        fetchBrandSettings();
     }, [orgId]);
+    useEffect(() => { if (userId) { fetchPosts(); } }, [userId, orgId, refreshTrigger]);
 
     useEffect(() => {
-
-        if (userId) {
-            fetchPosts();
-        }
-
-    }, [userId, orgId]);
+        const channel = new BroadcastChannel('posts_channel');
+        channel.onmessage = (event) => {
+            if (event.data === 'refresh_posts') {
+                setRefreshTrigger(prev => prev + 1);
+            }
+        };
+        return () => channel.close();
+    }, []);
 
     const fetchUserRole = async () => {
-
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-
         setUserId(user.id);
+        const { data } = await supabase.from('organization_members').select('role').eq('organization_id', orgId).eq('user_id', user.id).single();
+        if (data) setUserRole(data.role);
+    };
 
+    const fetchBrandSettings = async () => {
         const { data } = await supabase
-            .from('organization_members')
-            .select('role')
-            .eq('organization_id', orgId)
-            .eq('user_id', user.id)
+            .from('organizations')
+            .select('brand_colors')
+            .eq('id', orgId)
             .single();
 
-        if (data) {
-            setUserRole(data.role);
+        if (data?.brand_colors) {
+            setBrandColors(data.brand_colors);
         }
     };
 
     const fetchPosts = async () => {
-
         setLoading(true);
-
         let query = supabase
             .from('posts')
-            .select(`
-                *,
-                profiles:created_by (
-                    full_name,
-                    email
-                )
-            `)
+            .select(`*, profiles:created_by (full_name, email)`)
             .eq('organization_id', orgId)
-            .order('created_at', {
-                ascending: false,
-            });
-
-        // MEMBERS:
-        // drafts only visible to creator
-
-        if (
-            userRole !== 'owner' &&
-            userRole !== 'admin'
-        ) {
-
-            query = query.or(
-                `status.neq.draft,created_by.eq.${userId}`
-            );
+            .neq('status', 'published')
+            .order('created_at', { ascending: false });
+        if (userId) {
+            query = query.or(`status.neq.draft,created_by.eq.${userId}`);
         }
-
-        const { data, error } =
-            await query;
-
-        if (error) {
-
-            console.error(error);
-
-            setLoading(false);
-
-            return;
-        }
-
+        const { data, error } = await query;
+        if (error) { console.error(error); setLoading(false); return; }
         setPosts(data || []);
-
         setLoading(false);
     };
 
-    const handleApprove = async (
-        postId
-    ) => {
-
-        const post = posts.find(
-            (p) => p.id === postId
-        );
-
-        const { error } = await supabase
-            .from('posts')
-            .update({
-                status: 'approved',
-            })
-            .eq('id', postId);
-
-        if (error) {
-
-            console.error(error);
-
-            return;
-        }
-
-        await supabase
-            .from('activity_log')
-            .insert([
-                {
-                    organization_id: orgId,
-                    user_id: userId,
-                    post_id: postId,
-                    action_type: 'approve',
-                    action_text: `approved "${post?.title || 'Untitled'}"`
-                }
-            ]);
-
+    const handleApprove = async (postId) => {
+        const post = posts.find(p => p.id === postId);
+        const { error } = await supabase.from('posts').update({ status: 'approved' }).eq('id', postId);
+        if (error) { console.error(error); return; }
+        await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, post_id: postId, action_type: 'approve', action_text: `approved "${post?.title || 'Untitled'}"` }]);
         fetchPosts();
     };
 
     const handleReject = async (postId) => {
         const post = posts.find(p => p.id === postId);
-        const { error } = await supabase
-            .from('posts')
-            .update({ status: 'draft' })
-            .eq('id', postId);
-
-        if (error) {
-            console.error(error);
-            return;
-        }
-
-        await supabase.from('activity_log').insert([{
-            organization_id: orgId,
-            user_id: userId,
-            post_id: postId,
-            action_type: 'reject',
-            action_text: `rejected "${post?.title || 'Untitled'}"`
-        }]);
-
+        const { error } = await supabase.from('posts').update({ status: 'draft' }).eq('id', postId);
+        if (error) { console.error(error); return; }
+        await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, post_id: postId, action_type: 'reject', action_text: `rejected "${post?.title || 'Untitled'}"` }]);
         fetchPosts();
     };
 
-    const filteredPosts = posts.filter(
-        (post) => {
+    const toggleSelectPost = (postId) => {
+        setSelectedPosts(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]);
+    };
 
-            const matchesSearch =
-                post.title
-                    ?.toLowerCase()
-                    .includes(
-                        searchQuery.toLowerCase()
-                    ) ||
-                post.caption
-                    ?.toLowerCase()
-                    .includes(
-                        searchQuery.toLowerCase()
-                    );
-
-            const matchesSocial =
-                socialFilter === 'all' ||
-                post.social_account ===
-                socialFilter;
-
-            const matchesPlatform =
-                platformFilter === 'all' ||
-                post.platforms?.includes(
-                    platformFilter
-                );
-
-            const matchesStatus =
-                statusFilter === 'all' ||
-                post.status ===
-                statusFilter;
-
-            const matchesPostType =
-                postTypeFilter === 'all' ||
-                post.post_type ===
-                postTypeFilter;
-
-            return (
-                matchesSearch &&
-                matchesSocial &&
-                matchesPlatform &&
-                matchesStatus &&
-                matchesPostType
-            );
+    const toggleSelectAll = () => {
+        if (selectedPosts.length === filteredPosts.length && filteredPosts.length > 0) {
+            setSelectedPosts([]);
+        } else {
+            setSelectedPosts(filteredPosts.map(p => p.id));
         }
-    );
+    };
+
+    const handleBulkDelete = async () => {
+        setIsDeleting(true);
+        try {
+            const { data: oldImages } = await supabase.from('post_images').select('*').in('post_id', selectedPosts);
+            if (oldImages?.length > 0) {
+                const imagePaths = oldImages.map(img => img.image_path);
+                await supabase.storage.from('post-images').remove(imagePaths);
+            }
+            const { error } = await supabase.from('posts').delete().in('id', selectedPosts);
+            if (error) throw error;
+
+            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'delete', action_text: `bulk deleted ${selectedPosts.length} posts` }]);
+            setSelectedPosts([]);
+            setIsDeleteModalOpen(false);
+            fetchPosts();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleBulkMoveToPosted = async () => {
+        try {
+            const { error } = await supabase.from('posts').update({ status: 'published' }).in('id', selectedPosts);
+            if (error) throw error;
+
+            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'approve', action_text: `bulk published ${selectedPosts.length} posts` }]);
+            setSelectedPosts([]);
+            fetchPosts();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const filteredPosts = posts.filter(post => {
+        const matchesSearch = post.title?.toLowerCase().includes(searchQuery.toLowerCase()) || post.caption?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSocial = socialFilter === 'all' || post.social_account === socialFilter;
+        const matchesPlatform = platformFilter === 'all' || post.platforms?.includes(platformFilter);
+        const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
+        const matchesPostType = postTypeFilter === 'all' || post.post_type === postTypeFilter;
+        return matchesSearch && matchesSocial && matchesPlatform && matchesStatus && matchesPostType;
+    }).sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
+    const selectClass = "bg-light-card py-3 px-4 rounded-2xl border border-slate-200 text-[13px] font-bold text-slate-300 outline-none cursor-pointer";
 
     return (
-        <div className="posts-page">
-
-            <style>{`
-                .posts-page {
-                    padding: 40px;
-                    font-family: 'Inter', sans-serif;
-                    background: #010D2C;
-                    min-height: 100vh;
-                    color: #ffffff;
-                }
-
-                .posts-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 32px;
-                }
-
-                .posts-header h1 {
-                    color: #ffffff;
-                    font-size: 32px;
-                    font-weight: 800;
-                    margin: 0;
-                }
-
-                .controls-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 16px;
-                    margin-bottom: 32px;
-                    flex-wrap: wrap;
-                }
-
-                .search-bar {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    background: #0a1936;
-                    padding: 12px 20px;
-                    border-radius: 14px;
-                    border: 1.5px solid rgba(255, 255, 255, 0.05);
-                    flex: 1;
-                    min-width: 300px;
-                }
-
-                .search-bar input {
-                    border: none;
-                    outline: none;
-                    width: 100%;
-                    font-size: 14px;
-                    font-weight: 500;
-                    background: transparent;
-                    color: white;
-                }
-
-                .filters-group {
-                    display: flex;
-                    gap: 12px;
-                    flex-wrap: wrap;
-                }
-
-                .filter-select {
-                    background: #0a1936;
-                    padding: 12px 16px;
-                    border-radius: 14px;
-                    border: 1.5px solid rgba(255, 255, 255, 0.05);
-                    font-size: 13px;
-                    font-weight: 700;
-                    color: #cbd5e1;
-                    outline: none;
-                    cursor: pointer;
-                }
-
-                .view-toggle {
-                    display: flex;
-                    background: #0a1936;
-                    padding: 4px;
-                    border-radius: 12px;
-                    border: 1.5px solid rgba(255, 255, 255, 0.05);
-                }
-
-                .toggle-btn {
-                    padding: 8px;
-                    border-radius: 8px;
-                    border: none;
-                    background: transparent;
-                    color: #64748b;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .toggle-btn.active {
-                    background: #002B72;
-                    color: white;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                }
-
-                .create-btn {
-                    background: #002B72;
-                    color: white;
-                    padding: 12px 24px;
-                    border-radius: 14px;
-                    border: none;
-                    font-weight: 800;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .create-btn:hover {
-                    background: #001f54;
-                    transform: translateY(-2px);
-                }
-
-                .posts-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                    gap: 24px;
-                }
-
-                .posts-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-
-                @media (max-width: 1024px) {
-                    .controls-row {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-                }
-            `}</style>
-
-            <div className="posts-header">
-
-                <div>
-                    <h1>Posts</h1>
-
-                    <p
-                        style={{
-                            color: '#666',
-                            margin: '4px 0 0',
-                        }}
-                    >
-                        Manage and schedule your
-                        content
-                    </p>
+        <div className="p-10 font-sans bg-light-bg min-h-screen text-slate-900">
+            {/* Controls */}
+            <div className="flex justify-between items-center gap-4 mb-8 flex-wrap">
+                <div className="flex items-center gap-3 bg-light-card py-3 px-5 rounded-2xl border border-slate-200 flex-1 min-w-[300px]">
+                    <Search size={18} color="#94a3b8" />
+                    <input
+                        className="border-none outline-none w-full text-sm font-medium bg-transparent text-slate-900 placeholder:text-slate-500"
+                        placeholder="Search posts..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
 
                 <button
-                    className="create-btn"
-                    onClick={() =>
-                        window.open(
-                            `/org/${orgId}/posts/create`,
-                            '_blank'
-                        )
-                    }
+                    className="bg-brand text-white py-3 px-6 rounded-2xl border-none font-extrabold flex items-center gap-2.5 cursor-pointer transition-all duration-200 hover:bg-brand-hover hover:-translate-y-0.5 whitespace-nowrap"
+                    onClick={() => window.open(`/org/${orgId}/posts/create`, '_blank')}
                 >
                     <Plus size={20} />
                     Create Post
                 </button>
-            </div>
 
-            <div className="controls-row">
-
-                <div className="search-bar">
-
-                    <Search
-                        size={18}
-                        color="#94a3b8"
-                    />
-
-                    <input
-                        placeholder="Search posts..."
-                        value={searchQuery}
-                        onChange={(e) =>
-                            setSearchQuery(
-                                e.target.value
-                            )
-                        }
-                    />
+                <div className="flex bg-light-card p-1 rounded-xl border border-slate-200">
+                    <button
+                        className={`p-2 rounded-lg border-none cursor-pointer transition-all duration-200 ${viewMode === 'grid' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,0,0,0.2)]' : 'bg-transparent text-slate-500'}`}
+                        onClick={() => setViewMode('grid')}><LayoutGrid size={18} /></button>
+                    <button
+                        className={`p-2 rounded-lg border-none cursor-pointer transition-all duration-200 ${viewMode === 'list' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,0,0,0.2)]' : 'bg-transparent text-slate-500'}`}
+                        onClick={() => setViewMode('list')}><List size={18} /></button>
                 </div>
 
-                <div className="filters-group">
-
-                    <select
-                        className="filter-select"
-                        value={socialFilter}
-                        onChange={(e) =>
-                            setSocialFilter(
-                                e.target.value
-                            )
-                        }
-                    >
-                        <option value="all">
-                            All Socials
-                        </option>
-
-                        <option value="KLM">
-                            KL Main (KLM)
-                        </option>
-
-                        <option value="KLS">
-                            KL Select (KLS)
-                        </option>
-
-                        <option value="KLC">
-                            KL Community (KLC)
-                        </option>
-                    </select>
-
-                    <select
-                        className="filter-select"
-                        value={platformFilter}
-                        onChange={(e) =>
-                            setPlatformFilter(
-                                e.target.value
-                            )
-                        }
-                    >
-                        <option value="all">
-                            All Platforms
-                        </option>
-
-                        <option value="Instagram">
-                            Instagram
-                        </option>
-
-                        <option value="LinkedIn">
-                            LinkedIn
-                        </option>
-
-                        <option value="YouTube">
-                            YouTube
-                        </option>
-                    </select>
-
-                    <select
-                        className="filter-select"
-                        value={statusFilter}
-                        onChange={(e) =>
-                            setStatusFilter(
-                                e.target.value
-                            )
-                        }
-                    >
-                        <option value="all">
-                            All Status
-                        </option>
-
-                        <option value="draft">
-                            Draft
-                        </option>
-
-                        <option value="pending review">
-                            Pending Review
-                        </option>
-
-                        <option value="approved">
-                            Approved
-                        </option>
-
-                        <option value="published">
-                            Published
-                        </option>
-                    </select>
-
-                    <select
-                        className="filter-select"
-                        value={postTypeFilter}
-                        onChange={(e) =>
-                            setPostTypeFilter(
-                                e.target.value
-                            )
-                        }
-                    >
-                        <option value="all">
-                            All Types
-                        </option>
-
-                        <option value="reel">
-                            Reel
-                        </option>
-
-                        <option value="story">
-                            Story
-                        </option>
-
-                        <option value="carousel">
-                            Carousel
-                        </option>
-                    </select>
-
-                    <div className="view-toggle">
-
-                        <button
-                            className={`toggle-btn ${viewMode ===
-                                'grid'
-                                ? 'active'
-                                : ''
-                                }`}
-                            onClick={() =>
-                                setViewMode(
-                                    'grid'
-                                )
-                            }
-                        >
-                            <LayoutGrid
-                                size={18}
-                            />
-                        </button>
-
-                        <button
-                            className={`toggle-btn ${viewMode ===
-                                'list'
-                                ? 'active'
-                                : ''
-                                }`}
-                            onClick={() =>
-                                setViewMode(
-                                    'list'
-                                )
-                            }
-                        >
-                            <List size={18} />
-                        </button>
+                {selectedPosts.length > 0 ? (
+                    <div className="flex items-center gap-4 bg-brand/5 border border-brand/20 py-2.5 px-5 rounded-2xl animate-[fadeIn_0.2s_ease-out]">
+                        <div className="flex items-center gap-2">
+                            <button
+                                className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-brand/10 text-brand cursor-pointer border-none transition-colors"
+                                onClick={() => setSelectedPosts([])}
+                                title="Clear selection"
+                            >
+                                <X size={14} strokeWidth={3} />
+                            </button>
+                            <span className="text-sm font-bold text-brand">{selectedPosts.length} selected</span>
+                        </div>
+                        <div className="w-px h-5 bg-brand/20"></div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                className="flex items-center gap-2 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 py-1.5 px-3 rounded-lg cursor-pointer transition-colors border-none"
+                                onClick={() => setIsDeleteModalOpen(true)}
+                            >
+                                <Trash2 size={16} />
+                                Delete All
+                            </button>
+                            <button
+                                className="flex items-center gap-2 text-sm font-bold text-[#10b981] bg-[#10b981]/10 hover:bg-[#10b981]/20 py-1.5 px-3 rounded-lg cursor-pointer transition-colors border-none"
+                                onClick={handleBulkMoveToPosted}
+                            >
+                                <CheckCircle size={16} />
+                                Move to Posted
+                            </button>
+                        </div>
                     </div>
+                ) : filteredPosts.length > 0 ? (
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
+                        <input
+                            type="checkbox"
+                            checked={selectedPosts.length === filteredPosts.length}
+                            onChange={toggleSelectAll}
+                            className="w-[18px] h-[18px] cursor-pointer rounded border-[1.5px] border-slate-300 accent-brand"
+                        />
+                        <label className="cursor-pointer" onClick={toggleSelectAll}>Select All</label>
+                    </div>
+                ) : null}
+
+                <div className="flex gap-3 flex-wrap">
+                    <div className="w-[160px]">
+                        <CustomSelect
+                            className={selectClass}
+                            value={socialFilter}
+                            onChange={val => setSocialFilter(val)}
+                            options={[
+                                { value: 'all', label: 'All Socials' },
+                                { value: 'KLM', label: 'KL Main (KLM)' },
+                                { value: 'KLS', label: 'KL Select (KLS)' },
+                                { value: 'KLC', label: 'KL Community (KLC)' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="w-[160px]">
+                        <CustomSelect
+                            className={selectClass}
+                            value={platformFilter}
+                            onChange={val => setPlatformFilter(val)}
+                            options={[
+                                { value: 'all', label: 'All Platforms' },
+                                { value: 'Instagram', label: 'Instagram' },
+                                { value: 'LinkedIn', label: 'LinkedIn' },
+                                { value: 'YouTube', label: 'YouTube' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="w-[160px]">
+                        <CustomSelect
+                            className={selectClass}
+                            value={statusFilter}
+                            onChange={val => setStatusFilter(val)}
+                            options={[
+                                { value: 'all', label: 'All Status' },
+                                { value: 'draft', label: 'Draft' },
+                                { value: 'pending review', label: 'Pending Review' },
+                                { value: 'approved', label: 'Approved' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="w-[160px]">
+                        <CustomSelect
+                            className={selectClass}
+                            value={postTypeFilter}
+                            onChange={val => setPostTypeFilter(val)}
+                            options={[
+                                { value: 'all', label: 'All Types' },
+                                { value: 'reel', label: 'Reel' },
+                                { value: 'story', label: 'Story' },
+                                { value: 'carousel', label: 'Carousel' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="w-[220px]">
+                        <CustomSelect
+                            className={selectClass}
+                            value={sortOrder}
+                            onChange={val => setSortOrder(val)}
+                            options={[
+                                { value: 'desc', label: 'Sort by date: Descending' },
+                                { value: 'asc', label: 'Sort by date: Ascending' }
+                            ]}
+                        />
+                    </div>
+
+                    <button
+                        className="bg-[#059669] hover:bg-[#047857] text-white text-[13px] font-extrabold py-3 px-5 rounded-2xl cursor-pointer transition-all duration-200 border-none shadow-[0_4px_12px_rgba(5,150,105,0.3)] hover:-translate-y-0.5"
+                        onClick={() => navigate(`/org/${orgId}/done-posting`)}
+                    >
+                        Published
+                    </button>
+
                 </div>
             </div>
 
+            {/* Posts */}
             {loading ? (
-
-                <div
-                    style={{
-                        textAlign: 'center',
-                        padding: '100px',
-                        color: '#002B72',
-                    }}
-                >
-                    Loading posts...
-                </div>
-
+                <div className="text-center py-24 text-brand font-bold">Loading posts...</div>
             ) : filteredPosts.length > 0 ? (
-
-                <div
-                    className={
-                        viewMode === 'grid'
-                            ? 'posts-grid'
-                            : 'posts-list'
-                    }
-                >
-
-                    {filteredPosts.map(
-                        (post) =>
-                            viewMode ===
-                                'grid' ? (
-                                <PostCard
-                                    key={post.id}
-                                    post={post}
-                                    userRole={userRole}
-                                    currentUserId={userId}
-                                    orgId={orgId}
-                                    onApprove={handleApprove}
-                                    onReject={handleReject}
-                                />
-                            ) : (
-                                <PostListRow
-                                    key={post.id}
-                                    post={post}
-                                    userRole={userRole}
-                                    currentUserId={userId}
-                                    orgId={orgId}
-                                    onApprove={handleApprove}
-                                    onReject={handleReject}
-                                />
-                            )
+                <div className={viewMode === 'grid' ? 'grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6' : 'flex flex-col gap-3'}>
+                    {filteredPosts.map(post =>
+                        viewMode === 'grid' ? (
+                            <PostCard key={post.id} post={post} userRole={userRole} currentUserId={userId} orgId={orgId} onApprove={handleApprove} onReject={handleReject} isSelected={selectedPosts.includes(post.id)} onSelect={() => toggleSelectPost(post.id)} brandColors={brandColors} />
+                        ) : (
+                            <PostListRow key={post.id} post={post} userRole={userRole} currentUserId={userId} orgId={orgId} onApprove={handleApprove} onReject={handleReject} isSelected={selectedPosts.includes(post.id)} onSelect={() => toggleSelectPost(post.id)} brandColors={brandColors} />
+                        )
                     )}
                 </div>
-
             ) : (
-
-                <div
-                    style={{
-                        textAlign: 'center',
-                        padding: '100px',
-                        background: 'white',
-                        borderRadius: '24px',
-                        border:
-                            '1.5px dashed #e2e8f0',
-                    }}
-                >
-                    <p
-                        style={{
-                            color: '#64748b',
-                            fontWeight: 600,
-                        }}
-                    >
-                        No posts found.
-                    </p>
+                <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                    <p className="text-slate-500 font-semibold">No posts found.</p>
                 </div>
             )}
+
+            <DeletePostModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleBulkDelete}
+                isDeleting={isDeleting}
+            />
         </div>
     );
 };

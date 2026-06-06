@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Circle } from 'lucide-react';
+import CustomSelect from '../common/CustomSelect';
 
 const AddQuestionModal = ({ isOpen, onClose, onAdd }) => {
     const [question, setQuestion] = useState({
@@ -24,183 +25,68 @@ const AddQuestionModal = ({ isOpen, onClose, onAdd }) => {
             return;
         }
         onAdd(question);
-        setQuestion({
-            text: '',
-            difficulty: 'easy',
-            options: ['', '', '', ''],
-            correctOption: 0
-        });
+        setQuestion({ text: '', difficulty: 'easy', options: ['', '', '', ''], correctOption: 0 });
         onClose();
     };
 
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <style>{`
-                .modal-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0, 43, 114, 0.4);
-                    backdrop-filter: blur(6px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 2000;
-                    padding: 20px;
-                }
-                .modal-content {
-                    background: white;
-                    width: 100%;
-                    max-width: 500px;
-                    border-radius: 24px;
-                    padding: 32px;
-                    position: relative;
-                    box-shadow: 0 25px 50px -12px rgba(0, 43, 114, 0.25);
-                    animation: slideUp 0.3s ease-out;
-                    color-scheme: light;
-                }
-                .close-btn {
-                    position: absolute;
-                    top: 24px;
-                    right: 24px;
-                    background: #f7f9fc;
-                    border: none;
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    color: #666;
-                }
-                .modal-title {
-                    color: #002B72;
-                    font-size: 20px;
-                    font-weight: 800;
-                    margin: 0 0 24px;
-                }
-                .form-group {
-                    margin-bottom: 20px;
-                }
-                .form-label {
-                    display: block;
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: #333;
-                    margin-bottom: 8px;
-                    padding-left: 4px;
-                }
-                .modal-input {
-                    width: 100%;
-                    padding: 12px 16px;
-                    border-radius: 12px;
-                    border: 1.5px solid #eee;
-                    font-size: 14px;
-                    outline: none;
-                    transition: all 0.2s;
-                    box-sizing: border-box;
-                    color: #333;
-                    background: white;
-                    color-scheme: light;
-                }
-                .modal-input:focus {
-                    border-color: #002B72;
-                    background: white;
-                }
-                .options-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 12px;
-                }
-                .opt-input-wrapper {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    background: #fcfcfc;
-                    padding: 10px 14px;
-                    border-radius: 12px;
-                    border: 1.5px solid #eee;
-                }
-                .opt-input-wrapper.active {
-                    border-color: #4ade80;
-                    background: #f0fdf4;
-                }
-                .radio-btn {
-                    cursor: pointer;
-                    color: #ccc;
-                }
-                .radio-btn.active {
-                    color: #4ade80;
-                }
-                .submit-modal-btn {
-                    width: 100%;
-                    background: #002B72;
-                    color: white;
-                    border: none;
-                    padding: 16px;
-                    border-radius: 16px;
-                    font-weight: 700;
-                    font-size: 16px;
-                    cursor: pointer;
-                    margin-top: 12px;
-                    transition: all 0.2s;
-                }
-                .submit-modal-btn:hover {
-                    background: #001f54;
-                    transform: translateY(-2px);
-                }
-                @keyframes slideUp {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `}</style>
+    const inputClass = "w-full py-3 px-4 rounded-xl border-[1.5px] border-slate-200 text-sm outline-none transition-all duration-200 text-gray-700 bg-white [color-scheme:light] box-border focus:border-brand focus:bg-white";
 
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <button className="close-btn" onClick={onClose}><X size={20} /></button>
-                <h2 className="modal-title">Add New Question</h2>
+    return (
+        <div className="fixed inset-0 bg-brand/40 backdrop-blur-md flex items-center justify-center z-[2000] p-5"
+            onClick={onClose}>
+            <div className="bg-white w-full max-w-[500px] rounded-3xl p-8 relative shadow-[0_25px_50px_-12px_rgba(0,43,114,0.25)] animate-[slideUp_0.3s_ease-out] [color-scheme:light]"
+                onClick={e => e.stopPropagation()}>
+                <button className="absolute top-6 right-6 bg-slate-100 border-none w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-slate-500 hover:bg-slate-200"
+                    onClick={onClose}>
+                    <X size={20} />
+                </button>
+                <h2 className="text-brand text-xl font-extrabold m-0 mb-6">Add New Question</h2>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label className="form-label">Difficulty</label>
-                        <select 
-                            className="modal-input"
+                    <div className="mb-5">
+                        <label className="block text-sm font-semibold text-gray-600 mb-2 pl-1">Difficulty</label>
+                        <CustomSelect
+                            className={inputClass}
                             value={question.difficulty}
-                            onChange={(e) => setQuestion({ ...question, difficulty: e.target.value })}
-                        >
-                            <option value="easy">Easy</option>
-                            <option value="medium">Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
+                            onChange={val => setQuestion({ ...question, difficulty: val })}
+                            options={[
+                                { value: 'easy', label: 'Easy' },
+                                { value: 'medium', label: 'Medium' },
+                                { value: 'hard', label: 'Hard' }
+                            ]}
+                        />
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Question Text</label>
-                        <input 
-                            className="modal-input"
+                    <div className="mb-5">
+                        <label className="block text-sm font-semibold text-gray-600 mb-2 pl-1">Question Text</label>
+                        <input
+                            className={inputClass}
                             placeholder="Type your question..."
                             value={question.text}
-                            onChange={(e) => setQuestion({ ...question, text: e.target.value })}
+                            onChange={e => setQuestion({ ...question, text: e.target.value })}
                             required
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Options (Select the correct one)</label>
-                        <div className="options-grid">
+                    <div className="mb-5">
+                        <label className="block text-sm font-semibold text-gray-600 mb-2 pl-1">Options (Select the correct one)</label>
+                        <div className="grid grid-cols-2 gap-3">
                             {question.options.map((opt, i) => (
-                                <div key={i} className={`opt-input-wrapper ${question.correctOption === i ? 'active' : ''}`}>
-                                    <div 
-                                        className={`radio-btn ${question.correctOption === i ? 'active' : ''}`}
+                                <div
+                                    key={i}
+                                    className={`flex items-center gap-2.5 py-2.5 px-3.5 rounded-xl border-[1.5px] transition-all duration-200 ${question.correctOption === i ? 'border-green-400 bg-green-50' : 'bg-slate-50 border-slate-200'}`}
+                                >
+                                    <div
+                                        className={`cursor-pointer transition-colors duration-200 ${question.correctOption === i ? 'text-green-400' : 'text-slate-600'}`}
                                         onClick={() => setQuestion({ ...question, correctOption: i })}
                                     >
                                         {question.correctOption === i ? <CheckCircle2 size={18} /> : <Circle size={18} />}
                                     </div>
-                                    <input 
-                                        className="modal-input" 
-                                        style={{ border: 'none', padding: 0, background: 'transparent' }}
-                                        placeholder={`Option ${i+1}`}
+                                    <input
+                                        className="border-none p-0 bg-transparent outline-none text-sm text-gray-700 flex-1"
+                                        placeholder={`Option ${i + 1}`}
                                         value={opt}
-                                        onChange={(e) => handleOptionChange(i, e.target.value)}
+                                        onChange={e => handleOptionChange(i, e.target.value)}
                                         required
                                     />
                                 </div>
@@ -208,7 +94,10 @@ const AddQuestionModal = ({ isOpen, onClose, onAdd }) => {
                         </div>
                     </div>
 
-                    <button type="submit" className="submit-modal-btn">Add to Quiz</button>
+                    <button
+                        type="submit"
+                        className="w-full bg-brand text-white border-none py-4 rounded-2xl font-bold text-base cursor-pointer mt-3 transition-all duration-200 hover:bg-brand-hover hover:-translate-y-0.5"
+                    >Add to Quiz</button>
                 </form>
             </div>
         </div>

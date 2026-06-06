@@ -13,6 +13,7 @@ import CreatePost from './pages/CreatePost'
 import Klm from './pages/socials/Klm'
 import Kls from './pages/socials/Kls'
 import Klc from './pages/socials/Klc'
+import DonePosting from './pages/DonePosting'
 import SideBar from './components/layout/SideBar'
 import ScrollToTop from './components/layout/ScrollTotop'
 
@@ -36,15 +37,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh',
-        color: '#002B72',
-        fontWeight: 800,
-        fontFamily: 'Inter, sans-serif'
-      }}>
+      <div className="flex items-center justify-center h-screen text-brand font-extrabold font-sans">
         Authenticating...
       </div>
     )
@@ -59,9 +52,9 @@ const ProtectedRoute = ({ children }) => {
 
 const Layout = () => {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#010D2C' }}>
+    <div className="flex min-h-screen bg-light-bg">
       <SideBar />
-      <main style={{ flex: 1, background: '#010D2C' }}>
+      <main className="flex-1 bg-light-bg">
         <ScrollToTop />
         <Outlet />
       </main>
@@ -95,6 +88,7 @@ const router = createBrowserRouter([
       { path: 'socials/klm', element: <Klm /> },
       { path: 'socials/kls', element: <Kls /> },
       { path: 'socials/klc', element: <Klc /> },
+      { path: 'done-posting', element: <DonePosting /> },
     ],
   },
   {

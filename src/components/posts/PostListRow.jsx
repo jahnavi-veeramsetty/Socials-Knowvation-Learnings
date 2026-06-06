@@ -1,7 +1,14 @@
 import React from 'react';
 import { Calendar, ShieldCheck, Clock, FileText, CheckCircle, ChevronRight } from 'lucide-react';
 
-const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId }) => {
+const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
+    const defaultColors = {
+        KLM: '#002B72',
+        KLS: '#4f46e5',
+        KLC: '#0ea5e9'
+    };
+    const rowColor = (brandColors && brandColors[post.social_account]) || defaultColors[post.social_account] || '#002B72';
+
     const getStatusStyle = (status) => {
         switch (status) {
             case 'published': return { bg: '#f0fdf4', color: '#16a34a', icon: <CheckCircle size={14} /> };
@@ -41,160 +48,62 @@ const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId
     };
 
     return (
-        <div className="post-list-row" onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}>
-            <style>{`
-                .post-list-row {
-                    background: white;
-                    border-radius: 16px;
-                    padding: 16px 24px;
-                    border: 1px solid #f1f5f9;
-                    display: grid;
-                    grid-template-columns: 80px 1fr 100px 120px 100px 180px;
-                    align-items: center;
-                    gap: 20px;
-                    transition: all 0.2s ease;
-                    cursor: pointer;
-                }
-                .post-list-row:hover {
-                    background: #f8fafc;
-                    border-color: #002B72;
-                }
-                .social-acc {
-                    font-size: 12px;
-                    font-weight: 800;
-                    color: #002B72;
-                    text-transform: uppercase;
-                }
-                .social-acc-group {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 4px;
-                }
-                .type-badge {
-                    font-size: 10px;
-                    font-weight: 800;
-                    padding: 2px 6px;
-                    border-radius: 4px;
-                    background: #f1f5f9;
-                    color: #64748b;
-                    text-transform: uppercase;
-                    width: fit-content;
-                }
-                .post-info h4 {
-                    margin: 0;
-                    font-size: 14px;
-                    font-weight: 700;
-                    color: #111;
-                }
-                .post-meta-small {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    margin-top: 4px;
-                }
-                .creator-tag {
-                    font-size: 11px;
-                    color: #94a3b8;
-                    font-weight: 600;
-                }
-                .platforms-cell {
-                    display: flex;
-                    gap: 8px;
-                    color: #94a3b8;
-                }
-                .date-cell {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: #475569;
-                }
-                .status-cell {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    padding: 4px 10px;
-                    border-radius: 999px;
-                    text-transform: uppercase;
-                    width: fit-content;
-                }
-                .action-cell {
-                    display: flex;
-                    justify-content: flex-end;
-                    color: #cbd5e1;
-                    gap: 8px;
-                }
-                .row-approve-btn {
-                    padding: 6px 12px;
-                    background: #002B72;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    cursor: pointer;
-                }
-                .row-reject-btn {
-                    padding: 6px 12px;
-                    background: #fff1f0;
-                    color: #ff4d4f;
-                    border: 1px solid #ffccc7;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    cursor: pointer;
-                }
-            `}</style>
-
-            <div className="social-acc-group">
-                <div className="social-acc">{post.social_account}</div>
+        <div
+            className={`bg-white rounded-2xl py-4 px-6 border border-slate-100 grid ${onSelect ? 'grid-cols-[30px_80px_1fr_100px_120px_100px_180px]' : 'grid-cols-[80px_1fr_100px_120px_100px_180px]'} items-center gap-5 transition-all duration-200 cursor-pointer hover:bg-slate-50 hover:border-brand`}
+            onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
+        >
+            {onSelect && (
+                <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={onSelect}
+                        className="w-[18px] h-[18px] cursor-pointer rounded border-[1.5px] border-slate-300 accent-brand transition-all duration-200"
+                    />
+                </div>
+            )}
+            <div className="flex flex-col gap-1">
+                <div className="text-xs font-extrabold uppercase" style={{ color: rowColor }}>{post.social_account}</div>
                 {post.post_type && (
-                    <div className="type-badge">{post.post_type}</div>
+                    <div className="text-[10px] font-extrabold py-0.5 px-1.5 rounded bg-slate-100 text-slate-500 uppercase w-fit">{post.post_type}</div>
                 )}
             </div>
-            
-            <div className="post-info">
-                <h4>{post.title}</h4>
-                <div className="post-meta-small">
-                    <span className="creator-tag">by {post.profiles?.full_name || post.profiles?.email || 'Unknown'}</span>
+
+            <div>
+                <h4 className="m-0 text-sm font-bold text-gray-900">{post.title}</h4>
+                <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[11px] text-slate-500 font-semibold">by {post.profiles?.full_name || post.profiles?.email || 'Unknown'}</span>
                 </div>
             </div>
 
-            <div className="platforms-cell">
+            <div className="flex gap-2 text-slate-500">
                 {post.platforms.map((p, i) => <PlatformIcon key={i} platform={p} />)}
             </div>
 
-            <div className="date-cell">
+            <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-600">
                 <Calendar size={14} color="#94a3b8" />
                 {post.scheduled_date}
             </div>
 
-            <div 
-                className="status-cell"
+            <div
+                className="flex items-center gap-1.5 text-[10px] font-bold py-1 px-2.5 rounded-full uppercase w-fit"
                 style={{ background: statusStyle.bg, color: statusStyle.color }}
             >
                 {statusStyle.icon}
                 {post.status}
             </div>
 
-            <div className="action-cell">
+            <div className="flex justify-end text-slate-600 gap-2">
                 {post.status === 'pending review' && (userRole === 'owner' || userRole === 'admin') ? (
                     <>
-                        <button 
-                            className="row-approve-btn"
-                            onClick={(e) => { e.stopPropagation(); onApprove(post.id); }}
-                        >
-                            Approve
-                        </button>
-                        <button 
-                            className="row-reject-btn"
-                            onClick={(e) => { e.stopPropagation(); onReject(post.id); }}
-                        >
-                            Reject
-                        </button>
+                        <button
+                            className="py-1.5 px-3 bg-brand text-white border-none rounded-lg text-[11px] font-bold cursor-pointer hover:bg-brand-hover"
+                            onClick={e => { e.stopPropagation(); onApprove(post.id); }}
+                        >Approve</button>
+                        <button
+                            className="py-1.5 px-3 bg-red-50 text-red-400 border border-[#ffccc7] rounded-lg text-[11px] font-bold cursor-pointer hover:bg-red-100"
+                            onClick={e => { e.stopPropagation(); onReject(post.id); }}
+                        >Reject</button>
                     </>
                 ) : (
                     <ChevronRight size={18} />

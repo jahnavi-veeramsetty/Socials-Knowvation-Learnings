@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, AlertCircle, Layout } from 'lucide-react';
+import React from 'react';
+import { CheckCircle, AlertCircle, Layout, Bell } from 'lucide-react';
 import { supabase } from '../supabase/supabase';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 // Dashboard Components
 import StatCards from '../components/dashboard/StatCards';
@@ -86,21 +87,6 @@ const Dashboard = () => {
 
     const weekRange = getWeekRange(new Date(today));
 
-    // Stats Calculation
-    const postsThisMonth = posts.filter(p => {
-        if (!p.scheduled_date) return false;
-        const d = new Date(p.scheduled_date);
-        return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-    }).length;
-
-    const scheduledThisWeek = posts.filter(p => {
-        if (!p.scheduled_date) return false;
-        const d = new Date(p.scheduled_date);
-        return d >= weekRange.start && d <= weekRange.end && p.status === 'approved';
-    }).length;
-
-    const pendingReview = posts.filter(p => p.status === 'pending review').length;
-
     // Weekly Calendar Days
     const weekDays = [];
     for (let i = 0; i < 7; i++) {
@@ -110,9 +96,22 @@ const Dashboard = () => {
     }
 
     const getPostsForDate = (date) => {
-        const dateStr = date.toISOString().split('T')[0];
+        // Use local date string to avoid timezone offset issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
         return posts.filter(p => p.scheduled_date === dateStr && p.status === 'approved');
     };
+
+    // Stats Calculation
+    const approvedPosts = posts.filter(p => p.status === 'approved').length;
+
+    const scheduledThisWeek = weekDays.reduce((total, date) => {
+        return total + getPostsForDate(date).length;
+    }, 0);
+
+    const pendingReview = posts.filter(p => p.status === 'pending review').length;
 
     // Activity Helpers
     const getActivityIcon = (type) => {
@@ -129,25 +128,24 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div style={{ padding: '48px', textAlign: 'center', color: '#002B72', fontWeight: 800 }}>
+            <div className="flex items-center justify-center h-screen text-brand font-extrabold">
                 Loading Dashboard...
             </div>
         );
     }
 
     return (
-        <div className="dashboard-page" style={{ padding: '32px 48px', background: '#010D2C', minHeight: '100vh' }}>
-            <style>{`
-                .dashboard-header { margin-bottom: 32px; }
-                .dashboard-header h1 { color: #ffffff; font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -1px; }
-            `}</style>
-
-            <div className="dashboard-header">
-                <h1>Dashboard</h1>
+        <div className="px-12 py-8 bg-light-bg min-h-screen">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-slate-900 text-[32px] font-black m-0 tracking-[-1px]">Dashboard</h1>
+                <button className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all duration-200 cursor-pointer relative hover:shadow-md hover:-translate-y-0.5">
+                    <Bell size={18} strokeWidth={2.5} />
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
             </div>
 
             <StatCards 
-                postsThisMonth={postsThisMonth} 
+                approvedPosts={approvedPosts} 
                 scheduledThisWeek={scheduledThisWeek} 
                 pendingReview={pendingReview} 
             />

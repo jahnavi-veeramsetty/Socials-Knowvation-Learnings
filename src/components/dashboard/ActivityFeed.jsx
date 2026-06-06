@@ -3,104 +3,34 @@ import { CheckCircle, AlertCircle, Layout } from 'lucide-react';
 
 const ActivityFeed = ({ activities, getActivityStyle, getActivityIcon }) => {
     return (
-        <div className="activity-section" style={{ marginTop: '48px' }}>
-            <style>{`
-                .activity-section {
-                    background: #0a1936;
-                    padding: 32px;
-                    border-radius: 32px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                }
-                .activity-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0;
-                    margin-top: 24px;
-                }
-                .activity-item {
-                    display: flex;
-                    gap: 20px;
-                    padding: 20px 0;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                }
-                .activity-item:last-child {
-                    border-bottom: none;
-                }
-                .activity-marker {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                }
-                .activity-icon-circle {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .activity-content {
-                    flex: 1;
-                }
-                .activity-user {
-                    font-size: 14px;
-                    font-weight: 800;
-                    color: #ffffff;
-                }
-                .activity-text {
-                    font-size: 14px;
-                    color: #94a3b8;
-                    margin-top: 4px;
-                }
-                .activity-time {
-                    font-size: 12px;
-                    color: #64748b;
-                    font-weight: 600;
-                    margin-top: 8px;
-                }
-                .activity-post-tag {
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 4px 10px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 8px;
-                    font-size: 12px;
-                    font-weight: 700;
-                    color: #cbd5e1;
-                    margin-left: 8px;
-                }
-            `}</style>
+        <div className="mt-12 bg-light-card p-8 rounded-[32px] border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+            <h2 className="text-xl font-extrabold text-slate-900 m-0">Team Activity</h2>
 
-            <div className="section-header" style={{ marginBottom: '0' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', margin: 0 }}>Team Activity</h2>
-            </div>
-
-            <div className="activity-list">
+            <div className="flex flex-col mt-6">
                 {activities.length > 0 ? (
                     activities.map((item, idx) => (
-                        <div key={idx} className="activity-item">
-                            <div className="activity-marker">
-                                <div className="activity-icon-circle" style={getActivityStyle(item.action_type)}>
+                        <div key={idx} className="flex gap-5 py-5 border-b border-slate-200 last:border-b-0">
+                            <div className="flex flex-col items-center">
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={getActivityStyle(item.action_type)}>
                                     {getActivityIcon(item.action_type)}
                                 </div>
                             </div>
-                            <div className="activity-content">
-                                <div className="activity-user">
+                            <div className="flex-1">
+                                <div className="text-sm font-extrabold text-slate-900">
                                     {item.profiles?.full_name || item.profiles?.email || 'Unknown User'}
                                 </div>
-                                <div className="activity-text">
-                                    {item.action_text} 
-                                    <span className="activity-post-tag">{item.posts?.title || 'Untitled'}</span>
+                                <div className="text-sm text-slate-500 mt-1">
+                                    {item.action_text}
+                                    <span className="inline-flex items-center py-1 px-2.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 ml-2">{item.posts?.title || 'Untitled'}</span>
                                 </div>
-                                <div className="activity-time">
+                                <div className="text-xs text-slate-500 font-semibold mt-2">
                                     {new Date(item.created_at).toLocaleString()}
                                 </div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: 600 }}>
+                    <div className="py-10 text-center text-slate-500 font-semibold">
                         No activity yet.
                     </div>
                 )}

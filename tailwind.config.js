@@ -10,6 +10,11 @@ export default {
         brand: {
           DEFAULT: '#002B72',
           hover: '#001f54',
+        },
+        light: {
+          bg: '#f8fafc', // slate-50
+          sidebar: '#ffffff',
+          card: '#ffffff',
         }
       },
       fontFamily: {
@@ -19,4 +24,3 @@ export default {
   },
   plugins: [],
 }
-

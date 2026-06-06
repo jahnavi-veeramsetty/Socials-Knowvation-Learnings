@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Palette, Pipette } from 'lucide-react';
 import { HexColorPicker } from "react-colorful";
 
 const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
-    const [activeTab, setActiveTab] = useState('KLM');
+    const [activeTab, setActiveTab] = React.useState('KLM');
 
     const accounts = [
         { id: 'KLM', name: 'KL Main (KLM)' },
@@ -12,262 +12,45 @@ const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
     ];
 
     const handleColorChange = (color) => {
-        setBrandColors({
-            ...brandColors,
-            [activeTab]: color
-        });
+        setBrandColors({ ...brandColors, [activeTab]: color });
     };
 
     return (
-        <div className="canva-brand-settings">
-            <style>{`
-                .canva-brand-settings {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 32px;
-                    padding: 20px 0;
-                }
-
-                .section-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                }
-
-                .section-header h2 {
-                    font-size: 18px;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin: 0;
-                }
-
-                .section-header p {
-                    font-size: 14px;
-                    color: #64748b;
-                    margin: 4px 0 0;
-                }
-                .readonly-badge {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                    background: rgba(59, 130, 246, 0.1);
-                    color: #3b82f6;
-                    padding: 4px 10px;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                .brand-settings-content {
-                    display: flex;
-                    gap: 32px;
-                    align-items: flex-start;
-                }
-
-                @media (max-width: 700px) {
-                    .brand-settings-content {
-                        flex-direction: column;
-                    }
-                    .picker-container {
-                        margin: 0 auto;
-                        width: 100%;
-                    }
-                }
-
-                .picker-container {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    background: #0a1936;
-                    padding: 24px;
-                    border-radius: 20px;
-                    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    width: 320px;
-                    flex-shrink: 0;
-                }
-
-                /* Customizing react-colorful */
-                .react-colorful {
-                    width: 100% !important;
-                    height: 180px !important;
-                }
-
-                .react-colorful__saturation {
-                    flex-grow: 1;
-                    border-radius: 8px 8px 0 0 !important;
-                    border-bottom: none !important;
-                    background-image: linear-gradient(transparent, #000), linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
-                }
-
-                .react-colorful__hue {
-                    height: 16px !important;
-                    border-radius: 8px !important;
-                    margin-top: 16px;
-                    background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
-                }
-                
-                .react-colorful__pointer {
-                    width: 24px !important;
-                    height: 24px !important;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-                }
-
-                .bottom-controls {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    width: 100%;
-                    margin-top: 20px;
-                }
-                
-                .hex-input-wrapper {
-                    flex: 1;
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 8px;
-                    padding: 8px 12px;
-                    background: rgba(255, 255, 255, 0.05);
-                }
-                
-                .color-preview-circle {
-                    width: 20px;
-                    height: 20px;
-                    border-radius: 50%;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    flex-shrink: 0;
-                }
-                
-                .hex-input-field {
-                    border: none;
-                    outline: none;
-                    font-family: 'Inter', sans-serif;
-                    font-weight: 600;
-                    color: #ffffff;
-                    width: 100%;
-                    text-transform: uppercase;
-                    font-size: 14px;
-                    background: transparent;
-                }
-                
-                .hex-input-field::selection {
-                    background: rgba(255, 255, 255, 0.2);
-                    color: white;
-                }
-                
-                .eyedropper-btn {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 38px;
-                    height: 38px;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 8px;
-                    background: rgba(255, 255, 255, 0.05);
-                    color: #94a3b8;
-                    cursor: pointer;
-                    flex-shrink: 0;
-                    transition: all 0.2s;
-                }
-
-                .eyedropper-btn:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: #ffffff;
-                }
-
-                .account-cards-row {
-                    flex: 1;
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-                    gap: 16px;
-                }
-
-                .account-color-card {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 16px;
-                    padding: 24px;
-                    background: rgba(255, 255, 255, 0.02);
-                    border-radius: 24px;
-                    border: 2px solid transparent;
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-
-                .account-color-card:hover {
-                    background: rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-                    border-color: rgba(255, 255, 255, 0.05);
-                }
-
-                .account-color-card.active {
-                    background: rgba(0, 43, 114, 0.2);
-                    border-color: #002B72;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-                    transform: translateY(-4px);
-                }
-
-                .preview-circle {
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 50%;
-                    border: 4px solid #0a1936;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    transition: transform 0.3s;
-                }
-
-                .active .preview-circle {
-                    transform: scale(1.1);
-                }
-
-                .card-meta {
-                    text-align: center;
-                }
-
-                .card-meta strong {
-                    display: block;
-                    font-size: 15px;
-                    color: #ffffff;
-                    margin-bottom: 2px;
-                }
-
-                .card-meta span {
-                    font-size: 12px;
-                    color: #64748b;
-                    font-weight: 600;
-                }
-            `}</style>
-
-            <div className="section-header">
+        <div className="flex flex-col gap-8 py-5">
+            {/* Section Header */}
+            <div className="flex items-center gap-3">
                 <Palette size={22} color="#002B72" />
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="flex-1 flex items-center justify-between">
                     <div>
-                        <h2>Brand Colors</h2>
-                        <p>Select a card below, then use the color picker to set its color.</p>
+                        <h2 className="text-lg font-extrabold text-slate-900 m-0">Brand Colors</h2>
+                        <p className="text-sm text-slate-500 mt-1 mb-0">Select a card below, then use the color picker to set its color.</p>
                     </div>
-                    {readOnly && <span className="readonly-badge">View Only</span>}
+                    {readOnly && (
+                        <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-500 py-1 px-2.5 rounded-lg text-[11px] font-bold uppercase tracking-[0.5px]">View Only</span>
+                    )}
                 </div>
             </div>
 
-            <div className="brand-settings-content">
-                <div className="picker-container">
-                    <div style={{ width: '100%', ...(readOnly ? { pointerEvents: 'none', opacity: 0.6 } : {}) }}>
+            {/* Content */}
+            <div className="flex gap-8 items-start flex-wrap md:flex-nowrap">
+                {/* Color Picker */}
+                <div className="flex flex-col items-center bg-light-card py-6 px-6 rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.3)] border border-slate-200 w-[320px] shrink-0">
+                    <div className="w-full" style={{ ...(readOnly ? { pointerEvents: 'none', opacity: 0.6 } : {}) }}>
                         <HexColorPicker
                             color={brandColors[activeTab] || '#002B72'}
                             onChange={handleColorChange}
+                            style={{ width: '100%', height: '180px' }}
                         />
                     </div>
 
-                    <div className="bottom-controls" style={readOnly ? { opacity: 0.6 } : {}}>
-                        <div className="hex-input-wrapper">
-                            <div className="color-preview-circle" style={{ background: brandColors[activeTab] || '#002B72' }} />
+                    <div className="flex items-center gap-3 w-full mt-5" style={readOnly ? { opacity: 0.6 } : {}}>
+                        <div className="flex-1 flex items-center gap-3 border border-slate-200 rounded-lg py-2 px-3 bg-slate-100">
+                            <div
+                                className="w-5 h-5 rounded-full border border-slate-200 shrink-0"
+                                style={{ background: brandColors[activeTab] || '#002B72' }}
+                            />
                             <input
-                                className="hex-input-field"
+                                className="border-none outline-none font-semibold text-slate-900 w-full uppercase text-sm bg-transparent"
                                 value={brandColors[activeTab] || '#002B72'}
                                 onChange={(e) => {
                                     let val = e.target.value;
@@ -278,26 +61,27 @@ const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
                                 disabled={readOnly}
                             />
                         </div>
-                        <button className="eyedropper-btn" disabled={readOnly}>
+                        <button className="flex items-center justify-center w-[38px] h-[38px] border border-slate-200 rounded-lg bg-slate-100 text-slate-500 cursor-pointer shrink-0 transition-all duration-200 hover:bg-slate-200 hover:text-slate-900" disabled={readOnly}>
                             <Pipette size={18} />
                         </button>
                     </div>
                 </div>
 
-                <div className="account-cards-row">
+                {/* Account Cards */}
+                <div className="flex-1 grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-4">
                     {accounts.map(acc => (
                         <div
                             key={acc.id}
-                            className={`account-color-card ${activeTab === acc.id ? 'active' : ''}`}
+                            className={`flex flex-col items-center gap-4 p-6 bg-slate-50 rounded-3xl border-2 cursor-pointer transition-all duration-300 ${activeTab === acc.id ? 'bg-brand/20 border-brand shadow-[0_10px_25px_rgba(0,0,0,0.3)] -translate-y-1' : 'border-transparent hover:bg-slate-100 hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:border-slate-200'}`}
                             onClick={() => setActiveTab(acc.id)}
                         >
                             <div
-                                className="preview-circle"
+                                className={`w-[60px] h-[60px] rounded-full border-4 border-dark-card shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-transform duration-300 ${activeTab === acc.id ? 'scale-110' : ''}`}
                                 style={{ background: brandColors[acc.id] || '#002B72' }}
                             />
-                            <div className="card-meta">
-                                <strong>{acc.id}</strong>
-                                <span>{acc.name}</span>
+                            <div className="text-center">
+                                <strong className="block text-[15px] text-slate-900 mb-0.5">{acc.id}</strong>
+                                <span className="text-xs text-slate-500 font-semibold">{acc.name}</span>
                             </div>
                         </div>
                     ))}

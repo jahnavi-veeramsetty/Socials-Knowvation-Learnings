@@ -1,75 +1,36 @@
 import React from 'react';
 import { TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 
-const StatCards = ({ postsThisMonth, scheduledThisWeek, pendingReview }) => {
+const StatCards = ({ approvedPosts, scheduledThisWeek, pendingReview }) => {
     return (
-        <div className="stats-grid">
-            <style>{`
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 24px;
-                    margin-bottom: 40px;
-                }
-                .stat-card {
-                    background: #0a1936;
-                    padding: 24px;
-                    border-radius: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                    display: flex;
-                    align-items: center;
-                    gap: 20px;
-                }
-                .stat-icon {
-                    width: 56px;
-                    height: 56px;
-                    border-radius: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .stat-info h3 {
-                    margin: 0;
-                    font-size: 14px;
-                    color: #94a3b8;
-                    font-weight: 700;
-                }
-                .stat-info .value {
-                    font-size: 28px;
-                    font-weight: 900;
-                    color: #ffffff;
-                    margin-top: 4px;
-                }
-            `}</style>
-
-            <div className="stat-card">
-                <div className="stat-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+        <div className="grid grid-cols-3 gap-6 mb-10">
+            <div className="bg-light-card p-6 rounded-3xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-500/10 text-blue-400">
                     <TrendingUp size={24} />
                 </div>
-                <div className="stat-info">
-                    <h3>Posts this month</h3>
-                    <div className="value">{postsThisMonth}</div>
+                <div>
+                    <h3 className="m-0 text-sm text-slate-500 font-bold">Approved posts</h3>
+                    <div className="text-[28px] font-black text-slate-900 mt-1">{approvedPosts}</div>
                 </div>
             </div>
 
-            <div className="stat-card">
-                <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+            <div className="bg-light-card p-6 rounded-3xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-500/10 text-emerald-400">
                     <CheckCircle size={24} />
                 </div>
-                <div className="stat-info">
-                    <h3>Scheduled this week</h3>
-                    <div className="value">{scheduledThisWeek}</div>
+                <div>
+                    <h3 className="m-0 text-sm text-slate-500 font-bold">Scheduled this week</h3>
+                    <div className="text-[28px] font-black text-slate-900 mt-1">{scheduledThisWeek}</div>
                 </div>
             </div>
 
-            <div className="stat-card">
-                <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+            <div className="bg-light-card p-6 rounded-3xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-amber-500/10 text-amber-400">
                     <AlertCircle size={24} />
                 </div>
-                <div className="stat-info">
-                    <h3>Pending review</h3>
-                    <div className="value">{pendingReview}</div>
+                <div>
+                    <h3 className="m-0 text-sm text-slate-500 font-bold">Pending review</h3>
+                    <div className="text-[28px] font-black text-slate-900 mt-1">{pendingReview}</div>
                 </div>
             </div>
         </div>

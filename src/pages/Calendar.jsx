@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import CustomSelect from '../components/common/CustomSelect';
 import {
     ChevronLeft,
     ChevronRight,
@@ -12,9 +13,15 @@ import {
     Link as LinkIcon,
     Film,
     Layers,
-    Smartphone
+    Smartphone,
+    Lock,
+    Globe,
+    Trash2,
+    X,
+    Plus
 } from 'lucide-react';
 import { supabase } from '../supabase/supabase';
+import AddEventModal from '../components/calendar/AddEventModal';
 
 const Calendar = () => {
     const { orgId } = useParams();
@@ -30,10 +37,22 @@ const Calendar = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [socialFilter, setSocialFilter] = useState('all');
     const [typeFilter, setTypeFilter] = useState('all');
+    const [viewMode, setViewMode] = useState('month');
+    const [events, setEvents] = useState([]);
+    const [userId, setUserId] = useState(null);
+    const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [deleteConfirmEventId, setDeleteConfirmEventId] = useState(null);
 
     useEffect(() => {
-        fetchApprovedPosts();
-        fetchBrandSettings();
+        const init = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setUserId(user.id);
+            fetchApprovedPosts();
+            fetchEvents();
+            fetchBrandSettings();
+        };
+        init();
     }, [orgId, currentDate]);
 
     const fetchBrandSettings = async () => {
@@ -62,6 +81,16 @@ const Calendar = () => {
         setLoading(false);
     };
 
+    const fetchEvents = async () => {
+        const { data, error } = await supabase
+            .from('calendar_events')
+            .select('*, profiles:created_by(full_name, email)')
+            .eq('organization_id', orgId);
+        if (!error) {
+            setEvents(data || []);
+        }
+    };
+
     const getDaysInMonth = (year, month) => {
         return new Date(year, month + 1, 0).getDate();
     };
@@ -70,12 +99,20 @@ const Calendar = () => {
         return new Date(year, month, 1).getDay();
     };
 
-    const nextMonth = () => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    const handleNext = () => {
+        if (viewMode === 'month') {
+            setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+        } else {
+            setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7));
+        }
     };
 
-    const prevMonth = () => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    const handlePrev = () => {
+        if (viewMode === 'month') {
+            setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+        } else {
+            setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7));
+        }
     };
 
     const monthNames = [
@@ -83,27 +120,44 @@ const Calendar = () => {
         "July", "August", "September", "October", "November", "December"
     ];
 
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const daysInMonth = getDaysInMonth(year, month);
-    const firstDay = getFirstDayOfMonth(year, month);
 
-    // Generate calendar grid
     const calendarDays = [];
-    // Padding for start of month
-    for (let i = 0; i < firstDay; i++) {
-        calendarDays.push(null);
-    }
-    // Days of month
-    for (let i = 1; i <= daysInMonth; i++) {
-        calendarDays.push(i);
+    if (viewMode === 'month') {
+        const daysInMonth = getDaysInMonth(year, month);
+        let firstDay = getFirstDayOfMonth(year, month);
+        firstDay = firstDay === 0 ? 6 : firstDay - 1; // Adjust for Monday start
+
+        for (let i = 0; i < firstDay; i++) {
+            calendarDays.push(null);
+        }
+        for (let i = 1; i <= daysInMonth; i++) {
+            calendarDays.push(new Date(year, month, i));
+        }
+        const remainder = calendarDays.length % 7;
+        if (remainder !== 0) {
+            for (let i = 0; i < 7 - remainder; i++) {
+                calendarDays.push(null);
+            }
+        }
+    } else {
+        let currentDayOfWeek = currentDate.getDay();
+        currentDayOfWeek = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1; // Adjust for Monday start
+        const startOfWeek = new Date(year, month, currentDate.getDate() - currentDayOfWeek);
+        for (let i = 0; i < 7; i++) {
+            calendarDays.push(new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + i));
+        }
     }
 
-    const getPostsForDate = (day) => {
-        if (!day) return [];
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const getPostsForDate = (dateObj) => {
+        if (!dateObj) return [];
+        const y = dateObj.getFullYear();
+        const m = dateObj.getMonth() + 1;
+        const d = dateObj.getDate();
+        const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
         return posts.filter(p => {
             const matchesDate = p.scheduled_date === dateStr;
@@ -115,357 +169,201 @@ const Calendar = () => {
         });
     };
 
+    const getEventsForDate = (dateObj) => {
+        if (!dateObj) return [];
+        const y = dateObj.getFullYear();
+        const m = dateObj.getMonth() + 1;
+        const d = dateObj.getDate();
+        const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+        return events.filter(e => e.event_date === dateStr && e.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    };
+
+    const handleDeleteEvent = (e, eventId) => {
+        e.stopPropagation();
+        setDeleteConfirmEventId(eventId);
+    };
+
+    const confirmDeleteEvent = async () => {
+        if (!deleteConfirmEventId) return;
+        const { error } = await supabase.from('calendar_events').delete().eq('id', deleteConfirmEventId);
+        if (!error) fetchEvents();
+        setDeleteConfirmEventId(null);
+    };
+
     const today = new Date();
-    const isToday = (day) => {
-        return year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const isToday = (dateObj) => {
+        if (!dateObj) return false;
+        return dateObj.getFullYear() === today.getFullYear() && dateObj.getMonth() === today.getMonth() && dateObj.getDate() === today.getDate();
+    };
+
+    const isPast = (dateObj) => {
+        if (!dateObj) return false;
+        return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()) < todayStart;
     };
 
     return (
-        <div className="calendar-page">
-            <style>{`
-                .calendar-page {
-                    padding: 32px 48px;
-                    font-family: 'Inter', sans-serif;
-                    background: #010D2C;
-                    min-height: 100vh;
-                    color: #ffffff;
-                }
-                .calendar-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-end;
-                    margin-bottom: 32px;
-                    gap: 32px;
-                }
-                .header-main {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 24px;
-                    flex: 1;
-                }
-                .header-top {
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                }
-                .header-top h1 {
-                    color: #ffffff;
-                    font-size: 32px;
-                    font-weight: 900;
-                    margin: 0;
-                    letter-spacing: -1px;
-                }
-                .filter-bar {
-                    display: flex;
-                    gap: 12px;
-                    align-items: center;
-                    background: #0a1936;
-                    padding: 8px;
-                    border-radius: 16px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                    width: fit-content;
-                }
-                .search-wrapper {
-                    position: relative;
-                    width: 240px;
-                }
-                .search-input {
-                    width: 100%;
-                    padding: 10px 16px 10px 40px;
-                    border-radius: 12px;
-                    border: 1px solid transparent;
-                    background: rgba(255, 255, 255, 0.05);
-                    font-size: 14px;
-                    font-weight: 600;
-                    outline: none;
-                    transition: all 0.2s;
-                    color: white;
-                }
-                .search-input:focus {
-                    background: rgba(255, 255, 255, 0.08);
-                    border-color: #002B72;
-                }
-                .search-icon {
-                    position: absolute;
-                    left: 14px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: #64748b;
-                }
-                .brand-legend {
-                    display: flex;
-                    gap: 10px;
-                    margin-bottom: 16px;
-                    justify-content: flex-end;
-                }
-                .legend-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-size: 11px;
-                    font-weight: 800;
-                    padding: 6px 14px;
-                    border-radius: 10px;
-                    transition: all 0.2s;
-                    border: 1px solid transparent;
-                }
-                .legend-item:hover {
-                    transform: translateY(-1px);
-                    filter: brightness(1.1);
-                }
-                .legend-marker {
-                    width: 6px;
-                    height: 6px;
-                    border-radius: 50%;
-                }
-                .right-side-header {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                }
-                .filter-select {
-                    padding: 10px 16px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    font-size: 13px;
-                    font-weight: 700;
-                    color: #cbd5e1;
-                    background: #0a1936;
-                    outline: none;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .filter-select:hover {
-                    border-color: #002B72;
-                    color: white;
-                }
-                .month-nav {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    background: #0a1936;
-                    padding: 8px;
-                    border-radius: 16px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                }
-                .month-nav h2 {
-                    font-size: 16px;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin: 0;
-                    padding: 0 16px;
-                    min-width: 140px;
-                    text-align: center;
-                }
-                .nav-btn {
-                    background: transparent;
-                    border: none;
-                    color: #64748b;
-                    padding: 8px;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .nav-btn:hover {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: white;
-                }
-                .calendar-container {
-                    background: #0a1936;
-                    border-radius: 32px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                    overflow: hidden;
-                }
-                .days-header {
-                    display: grid;
-                    grid-template-columns: repeat(7, 1fr);
-                    background: rgba(255, 255, 255, 0.02);
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                }
-                .day-label {
-                    padding: 20px;
-                    text-align: center;
-                    font-size: 11px;
-                    font-weight: 800;
-                    color: #64748b;
-                    text-transform: uppercase;
-                    letter-spacing: 1.5px;
-                }
-                .calendar-grid {
-                    display: grid;
-                    grid-template-columns: repeat(7, 1fr);
-                }
-                .calendar-day {
-                    min-height: 140px;
-                    padding: 14px;
-                    border-right: 1px solid rgba(255, 255, 255, 0.05);
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                    position: relative;
-                    transition: all 0.2s;
-                    background: #0a1936;
-                }
-                .calendar-day:nth-child(7n) {
-                    border-right: none;
-                }
-                .calendar-day:hover {
-                    background: rgba(255, 255, 255, 0.02);
-                    z-index: 10;
-                }
-                .day-number {
-                    font-size: 13px;
-                    font-weight: 800;
-                    color: #64748b;
-                    width: 32px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 10px;
-                    margin-bottom: 12px;
-                    transition: all 0.2s;
-                }
-                .calendar-day:hover .day-number {
-                    color: #ffffff;
-                    background: rgba(255, 255, 255, 0.05);
-                }
-                .day-number.is-today {
-                    background: #002B72;
-                    color: white;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.4);
-                }
-                .day-posts {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-                .post-indicator {
-                    padding: 6px 12px;
-                    border-radius: 12px;
-                    font-size: 12px;
-                    font-weight: 700;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    cursor: pointer;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                }
-                .post-indicator:hover {
-                    transform: translateY(-2px);
-                    background: rgba(255, 255, 255, 0.1);
-                    filter: brightness(1.2);
-                }
-                .platform-icon {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    opacity: 0.8;
-                }
-                .empty-day {
-                    background: rgba(0, 0, 0, 0.1);
-                }
-            `}</style>
-
-            <div className="calendar-header">
-                <div className="header-main">
-                    <div className="header-top">
-                        <CalendarIcon size={32} color="#002B72" />
-                        <h1>Content Calendar</h1>
-                    </div>
-
-                    <div className="filter-bar">
-                        <div className="search-wrapper">
-                            <Search size={18} className="search-icon" />
-                            <input
-                                type="text"
-                                className="search-input"
-                                placeholder="Search posts..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+        <div className="px-8 xl:px-12 py-8 bg-light-bg min-h-screen text-slate-900 font-sans overflow-x-hidden">
+            <div className="flex flex-col gap-6 mb-8">
+                {/* Header Row: Title & Navigation (Left), Tags (Right) */}
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-slate-900 text-[32px] font-black m-0 tracking-[-1px] min-w-[240px]">
+                            {viewMode === 'month' ? `${monthNames[month]} ${year}` : `Week of ${monthNames[calendarDays[0]?.getMonth() || month]} ${calendarDays[0]?.getDate()}`}
+                        </h1>
+                        <div className="flex gap-2">
+                            <button className="bg-white border border-slate-200 text-slate-500 w-10 h-10 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 shadow-sm hover:shadow-md hover:-translate-y-0.5" onClick={handlePrev}><ChevronLeft size={20} /></button>
+                            <button className="bg-white border border-slate-200 text-slate-500 w-10 h-10 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 shadow-sm hover:shadow-md hover:-translate-y-0.5" onClick={handleNext}><ChevronRight size={20} /></button>
                         </div>
-
-                        <select
-                            className="filter-select"
-                            value={socialFilter}
-                            onChange={(e) => setSocialFilter(e.target.value)}
-                        >
-                            <option value="all">All Accounts</option>
-                            <option value="KLM">KL Main</option>
-                            <option value="KLS">KL Select</option>
-                            <option value="KLC">KL Community</option>
-                        </select>
-
-                        <select
-                            className="filter-select"
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
-                        >
-                            <option value="all">All Types</option>
-                            <option value="reel">Reel</option>
-                            <option value="story">Story</option>
-                            <option value="carousel">Carousel</option>
-                        </select>
                     </div>
-                </div>
 
-                <div className="right-side-header">
-                    <div className="brand-legend">
+                    <div className="flex flex-wrap gap-2.5">
                         {['KLM', 'KLS', 'KLC'].map(acc => {
                             const color = brandColors[acc] || '#002B72';
                             const label = acc === 'KLM' ? 'KL Main' : acc === 'KLS' ? 'KL Select' : 'KL Community';
                             return (
                                 <div
                                     key={acc}
-                                    className="legend-item"
+                                    className="flex items-center gap-2 text-[12px] font-extrabold px-4 py-2 rounded-xl transition-all duration-200 border cursor-default"
                                     style={{
                                         background: `${color}10`,
                                         borderColor: `${color}30`,
                                         color: color
                                     }}
                                 >
-                                    <div className="legend-marker" style={{ background: color }}></div>
+                                    <div className="w-2 h-2 rounded-full" style={{ background: color }}></div>
                                     {label}
                                 </div>
                             );
                         })}
                     </div>
+                </div>
 
-                    <div className="month-nav">
-                        <button className="nav-btn" onClick={prevMonth}><ChevronLeft size={20} /></button>
-                        <h2>{monthNames[month]} {year}</h2>
-                        <button className="nav-btn" onClick={nextMonth}><ChevronRight size={20} /></button>
+                {/* Filters Row */}
+                <div className="flex flex-wrap gap-3 items-center bg-light-card p-2 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.05)] w-full">
+                    <div className="relative min-w-[250px] flex-1">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                        <input
+                            type="text"
+                            className="w-full py-2.5 pl-11 pr-4 rounded-xl border border-transparent bg-slate-50 text-sm font-semibold outline-none transition-all duration-200 text-slate-900 focus:bg-white focus:border-brand focus:shadow-[0_0_0_4px_rgba(0,43,114,0.1)]"
+                            placeholder="Search posts..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
+
+                    <div className="w-[150px]">
+                        <CustomSelect
+                            className="py-2.5 px-4 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white outline-none cursor-pointer transition-all duration-200 hover:border-brand hover:text-slate-900 shadow-sm"
+                            value={socialFilter}
+                            onChange={val => setSocialFilter(val)}
+                            options={[
+                                { value: 'all', label: 'All Accounts' },
+                                { value: 'KLM', label: 'KL Main' },
+                                { value: 'KLS', label: 'KL Select' },
+                                { value: 'KLC', label: 'KL Community' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="w-[150px]">
+                        <CustomSelect
+                            className="py-2.5 px-4 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white outline-none cursor-pointer transition-all duration-200 hover:border-brand hover:text-slate-900 shadow-sm"
+                            value={typeFilter}
+                            onChange={val => setTypeFilter(val)}
+                            options={[
+                                { value: 'all', label: 'All Types' },
+                                { value: 'reel', label: 'Reel' },
+                                { value: 'story', label: 'Story' },
+                                { value: 'carousel', label: 'Carousel' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="w-[150px]">
+                        <CustomSelect
+                            className="py-2.5 px-4 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-600 bg-white outline-none cursor-pointer transition-all duration-200 hover:border-brand hover:text-slate-900 shadow-sm"
+                            value={viewMode}
+                            onChange={val => setViewMode(val)}
+                            options={[
+                                { value: 'month', label: 'Month' },
+                                { value: 'week', label: 'Week' }
+                            ]}
+                        />
+                    </div>
+                    <button 
+                        className="bg-brand hover:bg-brand-hover text-white flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[13px] border-none cursor-pointer transition-all shadow-[0_4px_12px_rgba(0,43,114,0.3)] hover:-translate-y-0.5 ml-auto"
+                        onClick={() => {
+                            setSelectedEvent(null);
+                            setIsAddEventModalOpen(true);
+                        }}
+                    >
+                        <Plus size={16} /> Add Event
+                    </button>
                 </div>
             </div>
 
-            <div className="calendar-container">
-                <div className="days-header">
-                    {days.map(d => <div key={d} className="day-label">{d}</div>)}
+            <div className="bg-light-card rounded-[32px] border border-slate-200 shadow-[0_20px_40px_rgba(0,0,0,0.3)] overflow-hidden">
+                <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200">
+                    {days.map(d => <div key={d} className="py-5 text-center text-[11px] font-extrabold text-slate-500 uppercase tracking-[1.5px]">{d}</div>)}
                 </div>
 
-                <div className="calendar-grid">
-                    {calendarDays.map((day, idx) => {
-                        const dayPosts = getPostsForDate(day);
+                <div className="grid grid-cols-7">
+                    {calendarDays.map((dateObj, idx) => {
+                        const dayPosts = getPostsForDate(dateObj);
+                        const pastDay = isPast(dateObj);
                         return (
-                            <div key={idx} className={`calendar-day ${!day ? 'empty-day' : ''}`}>
-                                {day && (
-                                    <>
-                                        <span className={`day-number ${isToday(day) ? 'is-today' : ''}`}>
-                                            {day}
+                            <div key={idx} className={`h-[150px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden p-3.5 border-r border-b border-slate-200 relative transition-all duration-200 bg-light-card last-of-type:border-r-0 hover:bg-slate-50 hover:z-10 ${!dateObj ? 'bg-black/5' : ''}`}
+                                style={{ borderRight: (idx + 1) % 7 === 0 ? 'none' : undefined }}>
+                                
+                                {/* Faded X for past days */}
+                                {pastDay && (
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
+                                        <X size={140} strokeWidth={1.5} />
+                                    </div>
+                                )}
+
+                                {dateObj && (
+                                    <div className="relative z-10">
+                                        <span className={`text-[13px] font-extrabold w-8 h-8 flex items-center justify-center rounded-xl mb-3 transition-all duration-200 ${isToday(dateObj) ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.4)]' : 'text-slate-500'}`}>
+                                            {dateObj.getDate()}
                                         </span>
-                                        <div className="day-posts">
-                                            {getPostsForDate(day).map(post => {
+                                        <div className="flex flex-col gap-2">
+                                            {getEventsForDate(dateObj).map(evt => {
+                                                const evtColor = evt.color || '#0ea5e9';
+                                                return (
+                                                <div 
+                                                    key={`evt-${evt.id}`}
+                                                    onClick={() => {
+                                                        setSelectedEvent(evt);
+                                                        setIsAddEventModalOpen(true);
+                                                    }}
+                                                    className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between gap-2 border cursor-pointer transition-all duration-[0.2s_cubic-bezier(0.175,0.885,0.32,1.275)] hover:-translate-y-0.5 hover:shadow-md"
+                                                    style={{
+                                                        backgroundColor: `${evtColor}15`,
+                                                        borderColor: `${evtColor}40`,
+                                                        color: evtColor
+                                                    }}
+                                                >
+                                                    <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-ellipsis">
+                                                        {evt.is_public ? <Globe size={12} className="shrink-0" /> : <Lock size={12} className="shrink-0" />}
+                                                        <span className="truncate">{evt.title}</span>
+                                                    </div>
+                                                    {evt.created_by === userId && (
+                                                        <button 
+                                                            onClick={(e) => handleDeleteEvent(e, evt.id)}
+                                                            className="bg-transparent border-none p-0.5 rounded cursor-pointer transition-colors shrink-0 hover:bg-white/50"
+                                                            style={{ color: evtColor }}
+                                                            title="Delete Event"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )})}
+                                            {dayPosts.map(post => {
                                                 const color = brandColors[post.social_account] || '#002B72';
 
                                                 const getIcon = () => {
@@ -479,30 +377,71 @@ const Calendar = () => {
                                                 return (
                                                     <div
                                                         key={post.id}
-                                                        className={`post-indicator ${post.social_account}`}
+                                                        className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-[0.2s_cubic-bezier(0.175,0.885,0.32,1.275)] border hover:-translate-y-0.5 hover:brightness-110"
                                                         style={{
-                                                            background: `${color}10`, // 10% opacity hex
-                                                            borderColor: `${color}40`, // 25% opacity hex
+                                                            background: `${color}10`,
+                                                            borderColor: `${color}40`,
                                                             color: color
                                                         }}
                                                         onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
                                                         title={post.title}
                                                     >
-                                                        <span className="platform-icon">{getIcon()}</span>
-                                                        <span style={{ textTransform: 'capitalize' }}>
-                                                            {post.post_type}: {post.title}
+                                                        <span className="flex items-center justify-center opacity-80">{getIcon()}</span>
+                                                        <span className="capitalize truncate">
+                                                            {post.title}
                                                         </span>
                                                     </div>
                                                 );
                                             })}
                                         </div>
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         );
                     })}
                 </div>
             </div>
+
+            <AddEventModal 
+                isOpen={isAddEventModalOpen} 
+                onClose={() => {
+                    setIsAddEventModalOpen(false);
+                    setSelectedEvent(null);
+                }} 
+                orgId={orgId} 
+                userId={userId} 
+                onEventAdded={fetchEvents}
+                editEvent={selectedEvent}
+            />
+
+            {/* Custom Delete Confirmation Modal */}
+            {deleteConfirmEventId && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center animate-[fadeIn_0.2s_ease-out]">
+                    <div className="bg-white w-[400px] max-w-[90vw] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-6 animate-[slideUp_0.3s_ease-out]">
+                        <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+                            <Trash2 size={24} />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-900 mb-2">Delete Event</h3>
+                        <p className="text-sm font-medium text-slate-500 mb-6">
+                            Are you sure you want to delete this event? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDeleteConfirmEventId(null)}
+                                className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors border-none cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteEvent}
+                                className="px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-red-500 hover:bg-red-600 transition-colors border-none cursor-pointer shadow-[0_4px_12px_rgba(239,68,68,0.3)] hover:-translate-y-0.5"
+                            >
+                                Yes, Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

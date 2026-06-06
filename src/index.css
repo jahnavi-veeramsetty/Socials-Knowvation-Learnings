@@ -4,12 +4,12 @@
 
 :root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --bg-dark: #010D2C;
-  --bg-sidebar: #01081a;
-  --bg-card: #0a1936;
-  --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --border-muted: rgba(255, 255, 255, 0.08);
+  --bg-dark: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-muted: #e2e8f0;
   --accent: #002B72;
 }
 
@@ -28,11 +28,32 @@ input, select, textarea {
 }
 
 option {
-  background-color: white;
-  color: #111111;
+  background-color: #ffffff;
+  color: #0f172a;
 }
 
 #root {
   width: 100%;
   margin: 0 auto;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

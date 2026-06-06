@@ -1,5 +1,6 @@
 import React from 'react';
 import { Trash2, CheckCircle2, Circle } from 'lucide-react';
+import CustomSelect from '../common/CustomSelect';
 
 const QuestionForm = ({ question, index, updateQuestion, removeQuestion }) => {
     const handleOptionChange = (optIndex, value) => {
@@ -13,166 +14,60 @@ const QuestionForm = ({ question, index, updateQuestion, removeQuestion }) => {
     };
 
     return (
-        <div className="question-card">
-            <style>{`
-                .question-card {
-                    background: white;
-                    border-radius: 24px;
-                    padding: 32px;
-                    margin-bottom: 24px;
-                    border: 1px solid #eee;
-                    box-shadow: 0 4px 20px rgba(0, 43, 114, 0.05);
-                    transition: all 0.3s ease;
-                    color-scheme: light;
-                }
-                .question-card:hover {
-                    box-shadow: 0 8px 30px rgba(0, 43, 114, 0.1);
-                }
-                .question-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 24px;
-                }
-                .question-number {
-                    background: rgba(0, 43, 114, 0.08);
-                    color: #002B72;
-                    padding: 4px 12px;
-                    border-radius: 999px;
-                    font-size: 13px;
-                    font-weight: 700;
-                }
-                .difficulty-select {
-                    padding: 8px 12px;
-                    border-radius: 10px;
-                    border: 1.5px solid #eee;
-                    font-size: 14px;
-                    color: #555;
-                    outline: none;
-                    cursor: pointer;
-                    background: white;
-                    color-scheme: light;
-                }
-                .difficulty-select:focus {
-                    border-color: #002B72;
-                }
-                .question-input {
-                    width: 100%;
-                    padding: 16px;
-                    border-radius: 12px;
-                    border: 1.5px solid #eee;
-                    font-size: 16px;
-                    margin-bottom: 24px;
-                    outline: none;
-                    transition: all 0.2s;
-                    box-sizing: border-box;
-                    color: #333;
-                    background: white;
-                    color-scheme: light;
-                }
-                .question-input:focus {
-                    border-color: #002B72;
-                    box-shadow: 0 0 0 4px rgba(0, 43, 114, 0.05);
-                }
-                .options-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 16px;
-                }
-                .option-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    background: #fcfcfc;
-                    padding: 12px 16px;
-                    border-radius: 12px;
-                    border: 1.5px solid #eee;
-                    transition: all 0.2s;
-                }
-                .option-item.correct {
-                    border-color: #4ade80;
-                    background: #f0fdf4;
-                }
-                .option-input {
-                    flex: 1;
-                    border: none;
-                    background: transparent;
-                    font-size: 15px;
-                    outline: none;
-                    color: #333;
-                }
-                .correct-toggle {
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #ccc;
-                    transition: all 0.2s;
-                }
-                .correct-toggle.active {
-                    color: #4ade80;
-                }
-                .remove-btn {
-                    color: #ff4d4f;
-                    cursor: pointer;
-                    padding: 8px;
-                    border-radius: 8px;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .remove-btn:hover {
-                    background: #fff1f0;
-                }
-                @media (max-width: 600px) {
-                    .options-grid {
-                        grid-template-columns: 1fr;
-                    }
-                }
-            `}</style>
-
-            <div className="question-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span className="question-number">Question {index + 1}</span>
-                    <select 
-                        className="difficulty-select"
-                        value={question.difficulty}
-                        onChange={(e) => updateQuestion(index, { difficulty: e.target.value })}
-                    >
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
+        <div className="bg-white rounded-3xl p-8 mb-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,43,114,0.05)] transition-all duration-300 [color-scheme:light] hover:shadow-[0_8px_30px_rgba(0,43,114,0.1)]">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                    <span className="bg-brand/[0.08] text-brand py-1 px-3 rounded-full text-[13px] font-bold">Question {index + 1}</span>
+                    <div className="w-[120px]">
+                        <CustomSelect
+                            className="py-2 px-3 rounded-xl border-[1.5px] border-slate-200 text-sm text-gray-600 outline-none cursor-pointer bg-white [color-scheme:light] focus:border-brand"
+                            value={question.difficulty}
+                            onChange={val => updateQuestion(index, { difficulty: val })}
+                            options={[
+                                { value: 'easy', label: 'Easy' },
+                                { value: 'medium', label: 'Medium' },
+                                { value: 'hard', label: 'Hard' }
+                            ]}
+                        />
+                    </div>
                 </div>
-                <button className="remove-btn" onClick={() => removeQuestion(index)}>
+                <button
+                    className="text-red-400 cursor-pointer p-2 rounded-lg transition-all duration-200 flex items-center justify-center bg-transparent border-none hover:bg-red-50"
+                    onClick={() => removeQuestion(index)}
+                >
                     <Trash2 size={18} />
                 </button>
             </div>
 
-            <input 
-                type="text" 
-                className="question-input" 
+            {/* Input */}
+            <input
+                type="text"
+                className="w-full py-4 px-4 rounded-xl border-[1.5px] border-slate-200 text-base mb-6 outline-none transition-all duration-200 box-border text-gray-700 bg-white [color-scheme:light] focus:border-brand focus:shadow-[0_0_0_4px_rgba(0,43,114,0.05)]"
                 placeholder="Enter your question here..."
                 value={question.text}
-                onChange={(e) => updateQuestion(index, { text: e.target.value })}
+                onChange={e => updateQuestion(index, { text: e.target.value })}
             />
 
-            <div className="options-grid">
+            {/* Options */}
+            <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
                 {question.options.map((option, optIndex) => (
-                    <div key={optIndex} className={`option-item ${question.correctOption === optIndex ? 'correct' : ''}`}>
-                        <div 
-                            className={`correct-toggle ${question.correctOption === optIndex ? 'active' : ''}`}
+                    <div
+                        key={optIndex}
+                        className={`flex items-center gap-3 bg-slate-50 py-3 px-4 rounded-xl border-[1.5px] transition-all duration-200 ${question.correctOption === optIndex ? 'border-green-400 bg-green-50' : 'border-slate-200'}`}
+                    >
+                        <div
+                            className={`cursor-pointer flex items-center justify-center transition-all duration-200 ${question.correctOption === optIndex ? 'text-green-400' : 'text-slate-600'}`}
                             onClick={() => handleCorrectOption(optIndex)}
                         >
                             {question.correctOption === optIndex ? <CheckCircle2 size={20} /> : <Circle size={20} />}
                         </div>
-                        <input 
-                            type="text" 
-                            className="option-input" 
+                        <input
+                            type="text"
+                            className="flex-1 border-none bg-transparent text-[15px] outline-none text-gray-700"
                             placeholder={`Option ${optIndex + 1}`}
                             value={option}
-                            onChange={(e) => handleOptionChange(optIndex, e.target.value)}
+                            onChange={e => handleOptionChange(optIndex, e.target.value)}
                         />
                     </div>
                 ))}

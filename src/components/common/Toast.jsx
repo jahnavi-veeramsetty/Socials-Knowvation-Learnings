@@ -3,9 +3,7 @@ import { CheckCircle, AlertCircle, X, Info } from 'lucide-react';
 
 const Toast = ({ message, type = 'success', onClose }) => {
     useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose();
-        }, 4000);
+        const timer = setTimeout(() => { onClose(); }, 4000);
         return () => clearTimeout(timer);
     }, [onClose]);
 
@@ -20,57 +18,17 @@ const Toast = ({ message, type = 'success', onClose }) => {
     const styles = getStyles();
 
     return (
-        <div className="toast-notification">
-            <style>{`
-                .toast-notification {
-                    position: fixed;
-                    bottom: 32px;
-                    right: 32px;
-                    background: ${styles.bg};
-                    border: 1px solid ${styles.border};
-                    color: ${styles.color};
-                    padding: 16px 24px;
-                    border-radius: 16px;
-                    box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    z-index: 9999;
-                    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                    min-width: 300px;
-                }
-                .toast-icon {
-                    display: flex;
-                    align-items: center;
-                }
-                .toast-message {
-                    font-size: 14px;
-                    font-weight: 700;
-                    flex: 1;
-                }
-                .toast-close {
-                    background: none;
-                    border: none;
-                    color: currentColor;
-                    opacity: 0.5;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    padding: 4px;
-                    transition: opacity 0.2s;
-                }
-                .toast-close:hover {
-                    opacity: 1;
-                }
-                @keyframes slideUp {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `}</style>
-            
-            <div className="toast-icon">{styles.icon}</div>
-            <div className="toast-message">{message}</div>
-            <button className="toast-close" onClick={onClose}>
+        <div
+            className="fixed bottom-8 right-8 py-4 px-6 rounded-2xl shadow-[0_12px_24px_rgba(0,0,0,0.08)] flex items-center gap-3 z-[9999] min-w-[300px] animate-[slideUp_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+            style={{ background: styles.bg, border: `1px solid ${styles.border}`, color: styles.color }}
+        >
+            <div className="flex items-center">{styles.icon}</div>
+            <div className="text-sm font-bold flex-1">{message}</div>
+            <button
+                className="bg-none border-none cursor-pointer flex items-center p-1 transition-opacity duration-200 opacity-50 hover:opacity-100"
+                style={{ color: 'currentColor' }}
+                onClick={onClose}
+            >
                 <X size={16} />
             </button>
         </div>

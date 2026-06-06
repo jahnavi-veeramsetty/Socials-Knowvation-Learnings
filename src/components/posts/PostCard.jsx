@@ -1,8 +1,24 @@
 import React from 'react';
 import { Calendar, MessageSquare, ExternalLink, ShieldCheck, Clock, FileText, CheckCircle } from 'lucide-react';
 
-const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId }) => {
+const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
     const isCreator = post.created_by === currentUserId;
+
+    const defaultColors = {
+        KLM: '#002B72',
+        KLS: '#4f46e5',
+        KLC: '#0ea5e9'
+    };
+    const cardColor = (brandColors && brandColors[post.social_account]) || defaultColors[post.social_account] || '#e2e8f0';
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return dateString;
+    };
 
     const getStatusStyle = (status) => {
         switch (status) {
@@ -42,216 +58,99 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId })
         }
     };
 
-    return (
-        <div className="post-card" onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}>
-            <style>{`
-                .post-card {
-                    background: #0a1936;
-                    border-radius: 20px;
-                    padding: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                    transition: all 0.3s ease;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 16px;
-                    cursor: pointer;
-                    position: relative;
-                }
-                .post-card:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-                    border-color: #002B72;
-                }
-                .card-top {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                }
-                .social-badge {
-                    font-size: 11px;
-                    font-weight: 800;
-                    padding: 4px 8px;
-                    border-radius: 6px;
-                    background: rgba(0, 43, 114, 0.3);
-                    color: white;
-                    text-transform: uppercase;
-                }
-                .type-badge {
-                    font-size: 11px;
-                    font-weight: 800;
-                    padding: 4px 8px;
-                    border-radius: 6px;
-                    background: rgba(255, 255, 255, 0.1);
-                    color: #cbd5e1;
-                    text-transform: uppercase;
-                }
-                .status-badge {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    padding: 4px 10px;
-                    border-radius: 999px;
-                    text-transform: uppercase;
-                }
-                .post-title {
-                    font-size: 16px;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin: 0;
-                    line-height: 1.4;
-                }
-                .post-caption {
-                    font-size: 13px;
-                    color: #94a3b8;
-                    margin: 4px 0 0;
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                    line-height: 1.5;
-                }
-                .creator-info {
-                    font-size: 11px;
-                    color: #64748b;
-                    font-weight: 600;
-                    margin-top: 8px;
-                }
-                .card-footer {
-                    margin-top: auto;
-                    padding-top: 16px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.05);
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .meta-group {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    color: #64748b;
-                }
-                .meta-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                    font-size: 12px;
-                    font-weight: 600;
-                }
-                .platforms-row {
-                    display: flex;
-                    gap: 6px;
-                }
-                .action-btns {
-                    display: flex;
-                    gap: 8px;
-                }
-                .approve-btn, .edit-btn {
-                    padding: 6px 12px;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    border: none;
-                }
-                .approve-btn {
-                    background: #002B72;
-                    color: white;
-                }
-                .approve-btn:hover { background: #001f54; }
-                .reject-btn {
-                    padding: 6px 12px;
-                    border-radius: 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    background: rgba(239, 68, 68, 0.1);
-                    color: #ff4d4f;
-                    border: 1px solid rgba(239, 68, 68, 0.2);
-                }
-                .reject-btn:hover {
-                    background: #ff4d4f;
-                    color: white;
-                }
-                .edit-btn {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: #cbd5e1;
-                }
-                .edit-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-            `}</style>
+    const getBrightness = (hex) => {
+        if (!hex) return 255;
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c.split('').map(char => char + char).join('');
+        if (c.length > 6) c = c.substring(0, 6);
+        const r = parseInt(c.substring(0, 2), 16);
+        const g = parseInt(c.substring(2, 4), 16);
+        const b = parseInt(c.substring(4, 6), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000;
+    };
 
-            <div className="card-top">
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <span className="social-badge">{post.social_account}</span>
-                    {post.post_type && (
-                        <span className="type-badge">{post.post_type}</span>
+    const isLight = getBrightness(cardColor) > 140;
+    const textColor = isLight ? '#0f172a' : '#ffffff';
+    const textMutedColor = isLight ? '#64748b' : 'rgba(255,255,255,0.75)';
+    const textMutedLightColor = isLight ? '#94a3b8' : 'rgba(255,255,255,0.5)';
+    const tagBg = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.15)';
+    const tagTextColor = isLight ? '#475569' : '#ffffff';
+    const borderCol = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)';
+
+    return (
+        <div
+            className="rounded-[20px] p-6 transition-all duration-300 ease-in-out flex flex-col gap-4 cursor-pointer relative hover:-translate-y-1"
+            style={{ 
+                background: `linear-gradient(135deg, ${cardColor}e6 0%, ${cardColor}b3 100%)`,
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: `1px solid ${borderCol}`,
+                boxShadow: `0 10px 30px -10px ${cardColor}80, inset 0 0 0 1px rgba(255, 255, 255, 0.2)`
+            }}
+            onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
+        >
+            {/* Top */}
+            <div className="flex justify-between items-start">
+                <div className="flex gap-2 items-center">
+                    {onSelect && (
+                        <div
+                            className="flex items-center justify-center mr-1"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={onSelect}
+                                className="w-[18px] h-[18px] cursor-pointer rounded border-[1.5px] border-slate-300 accent-brand transition-all duration-200"
+                            />
+                        </div>
                     )}
+                    <span className="text-[11px] font-extrabold py-1 px-2 rounded-[6px] uppercase" style={{ background: isLight ? `${cardColor}30` : 'rgba(255,255,255,0.2)', color: textColor }}>{post.social_account}</span>
+                    {post.post_type && <span className="text-[11px] font-extrabold py-1 px-2 rounded-[6px] uppercase" style={{ background: tagBg, color: tagTextColor }}>{post.post_type}</span>}
                 </div>
                 <div
-                    className="status-badge"
-                    style={{ background: statusStyle.bg, color: statusStyle.icon ? statusStyle.color : '#64748b' }}
+                    className="flex items-center gap-1.5 text-[10px] font-bold py-1 px-2.5 rounded-full uppercase"
+                    style={{ background: isLight ? statusStyle.bg : 'rgba(255,255,255,0.15)', color: isLight ? (statusStyle.icon ? statusStyle.color : '#64748b') : '#ffffff' }}
                 >
                     {statusStyle.icon}
                     {post.status}
                 </div>
             </div>
 
-            <div className="card-body">
-                <h3 className="post-title">{post.title}</h3>
-                <p className="post-caption">{post.caption}</p>
-                <div className="creator-info">
+            {/* Body */}
+            <div>
+                <h3 className="text-base font-extrabold m-0 leading-[1.4]" style={{ color: textColor }}>{post.title}</h3>
+                <p className="text-[13px] mt-1 mb-0 overflow-hidden leading-[1.5]" style={{ color: textMutedColor, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{post.caption}</p>
+                <div className="text-[11px] font-semibold mt-2" style={{ color: textMutedLightColor }}>
                     Created by {post.profiles?.full_name || post.profiles?.email || 'Unknown'}
                 </div>
             </div>
 
-            <div className="card-footer">
-                <div className="meta-group">
-                    <div className="platforms-row">
-                        {post.platforms.map((p, i) => <PlatformIcon key={i} platform={p} />)}
-                    </div>
-                    <div className="meta-item">
-                        <Calendar size={12} />
-                        {post.scheduled_date}
+            {/* Footer */}
+            <div className="mt-auto pt-4 flex justify-between items-center" style={{ borderTop: `1px solid ${borderCol}` }}>
+                <div className="flex items-center gap-3" style={{ color: textMutedColor }}>
+                    <div className="flex gap-1.5">{post.platforms.map((p, i) => <PlatformIcon key={i} platform={p} />)}</div>
+                    <div className="flex items-center gap-1 text-xs font-semibold">
+                        <Calendar size={12} />{formatDate(post.scheduled_date)}
                     </div>
                 </div>
 
-                <div className="action-btns">
-
-                    {post.status === 'pending review' &&
-                        (
-                            userRole === 'owner' ||
-                            userRole === 'admin'
-                        ) && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                    className="approve-btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onApprove(post.id);
-                                    }}
-                                >
-                                    Approve
-                                </button>
-                                <button
-                                    className="reject-btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onReject(post.id);
-                                    }}
-                                >
-                                    Reject
-                                </button>
-                            </div>
-                        )}
-
-                    <button className="edit-btn">
+                <div className="flex gap-2">
+                    {post.status === 'pending review' && (userRole === 'owner' || userRole === 'admin') && (
+                        <div className="flex gap-2">
+                            <button
+                                className="py-1.5 px-3 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none bg-brand text-white hover:bg-brand-hover"
+                                onClick={e => { e.stopPropagation(); onApprove(post.id); }}
+                            >Approve</button>
+                            <button
+                                className="py-1.5 px-3 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white"
+                                onClick={e => { e.stopPropagation(); onReject(post.id); }}
+                            >Reject</button>
+                        </div>
+                    )}
+                    <button className="py-1.5 px-3 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none" style={{ background: tagBg, color: tagTextColor }}>
                         {isCreator ? 'Edit' : 'View'}
                     </button>
-
                 </div>
             </div>
         </div>

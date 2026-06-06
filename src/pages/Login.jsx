@@ -32,126 +32,16 @@ const Login = () => {
     };
 
     return (
-        <div className="login-page">
-            <style>{`
-                .login-page {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-height: 100vh;
-                    padding: 20px;
-                    font-family: 'Inter', sans-serif;
-                    background: #010D2C;
-                    color: #ffffff;
-                }
-
-                .login-card {
-                    width: 100%;
-                    max-width: 440px;
-                    background: #0a1936;
-                    padding: 50px;
-                    border-radius: 32px;
-                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-
-                .login-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-                }
-
-                .login-header {
-                    text-align: center;
-                    margin-bottom: 40px;
-                }
-
-                .login-header h1 {
-                    color: #ffffff;
-                    font-size: 32px;
-                    font-weight: 800;
-                    margin: 0 0 10px;
-                    letter-spacing: -0.5px;
-                }
-
-                .login-header p {
-                    color: #64748b;
-                    font-size: 16px;
-                    margin: 0;
-                }
-
-                .form-group {
-                    margin-bottom: 24px;
-                }
-
-                .form-group label {
-                    display: block;
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: #cbd5e1;
-                    margin-bottom: 8px;
-                    margin-left: 4px;
-                }
-
-                .form-group input {
-                    width: 100%;
-                    padding: 16px 20px;
-                    border-radius: 16px;
-                    border: 2px solid rgba(255, 255, 255, 0.05);
-                    background: rgba(255, 255, 255, 0.02);
-                    font-size: 16px;
-                    transition: all 0.2s ease;
-                    box-sizing: border-box;
-                    color: white;
-                }
-
-                .form-group input:focus {
-                    outline: none;
-                    border-color: #002B72;
-                    background: rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 0 0 4px rgba(0, 43, 114, 0.2);
-                }
-
-                .submit-btn {
-                    width: 100%;
-                    background: #002B72;
-                    color: white;
-                    padding: 18px;
-                    border-radius: 16px;
-                    border: none;
-                    font-size: 18px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    margin-top: 10px;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                }
-
-                .submit-btn:hover {
-                    background: #001f54;
-                    transform: translateY(-2px);
-                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-                }
-
-                .submit-btn:active {
-                    transform: translateY(0);
-                }
-
-                .submit-btn:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
-            `}</style>
-
-            <div className="login-card">
-                <div className="login-header">
-                    <h1>Welcome Back</h1>
-                    <p>Please enter your details to sign in</p>
+        <div className="flex items-center justify-center min-h-screen p-5 bg-light-bg text-slate-900 font-sans">
+            <div className="w-full max-w-[440px] bg-light-card p-[50px] rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-slate-200 transition-transform duration-300 ease-in-out hover:-translate-y-[5px] hover:shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+                <div className="text-center mb-10">
+                    <h1 className="text-slate-900 text-[32px] font-extrabold mt-0 mb-2.5 tracking-[-0.5px]">Welcome Back</h1>
+                    <p className="text-slate-500 text-base m-0">Please enter your details to sign in</p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="email">Email Address</label>
+                    <div className="mb-6">
+                        <label htmlFor="email" className="block text-sm font-semibold text-slate-600 mb-2 ml-1">Email Address</label>
 
                         <input
                             type="email"
@@ -160,11 +50,12 @@ const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            className="w-full px-5 py-4 rounded-2xl border-2 border-slate-200 bg-slate-50 text-base transition-all duration-200 ease-in-out box-border text-slate-900 outline-none focus:border-brand focus:bg-slate-100 focus:shadow-[0_0_0_4px_rgba(0,43,114,0.2)]"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
+                    <div className="mb-6">
+                        <label htmlFor="password" className="block text-sm font-semibold text-slate-600 mb-2 ml-1">Password</label>
 
                         <input
                             type="password"
@@ -173,13 +64,14 @@ const Login = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            className="w-full px-5 py-4 rounded-2xl border-2 border-slate-200 bg-slate-50 text-base transition-all duration-200 ease-in-out box-border text-slate-900 outline-none focus:border-brand focus:bg-slate-100 focus:shadow-[0_0_0_4px_rgba(0,43,114,0.2)]"
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="submit-btn"
                         disabled={loading}
+                        className="w-full bg-brand text-white py-[18px] rounded-2xl border-none text-lg font-bold cursor-pointer transition-all duration-300 ease-in-out mt-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-brand-hover hover:-translate-y-0.5 hover:shadow-[0_15px_40px_rgba(0,0,0,0.4)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>

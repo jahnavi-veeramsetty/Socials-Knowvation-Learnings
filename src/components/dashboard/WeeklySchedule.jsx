@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar as CalendarIcon, Film, Layers, Smartphone, Layout } from 'lucide-react';
+import { Calendar as CalendarIcon, Film, Layers, Smartphone, Layout, X } from 'lucide-react';
 
 const WeeklySchedule = ({ weekDays, today, getPostsForDate, brandColors, orgId }) => {
     const getIcon = (type) => {
@@ -10,140 +10,66 @@ const WeeklySchedule = ({ weekDays, today, getPostsForDate, brandColors, orgId }
         return <Layout size={14} />;
     };
 
-    return (
-        <div className="weekly-schedule-section">
-            <style>{`
-                .section-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
-                .section-header h2 {
-                    font-size: 20px;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin: 0;
-                }
-                .weekly-view {
-                    display: grid;
-                    grid-template-columns: repeat(7, 1fr);
-                    gap: 16px;
-                }
-                .week-day-card {
-                    background: #0a1936;
-                    border-radius: 20px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    min-height: 200px;
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    transition: all 0.2s;
-                }
-                .week-day-card:hover {
-                    border-color: rgba(255, 255, 255, 0.1);
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                }
-                .day-header {
-                    padding: 12px;
-                    background: rgba(255, 255, 255, 0.02);
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                    text-align: center;
-                }
-                .day-name {
-                    font-size: 11px;
-                    font-weight: 800;
-                    color: #64748b;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                }
-                .day-number {
-                    font-size: 18px;
-                    font-weight: 900;
-                    color: #ffffff;
-                    margin-top: 2px;
-                }
-                .day-number.is-today {
-                    color: #3b82f6;
-                }
-                .day-content {
-                    padding: 12px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                    flex: 1;
-                }
-                .post-pill {
-                    padding: 8px;
-                    border-radius: 12px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    border: 1px solid transparent;
-                    cursor: pointer;
-                }
-                .post-pill span {
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .empty-state {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    color: #cbd5e1;
-                    gap: 8px;
-                    opacity: 0.5;
-                }
-            `}</style>
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isPast = (dateObj) => {
+        return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()) < todayStart;
+    };
 
-            <div className="section-header">
-                <h2>Weekly Schedule</h2>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#64748b' }}>
+    return (
+        <div className="mt-10">
+            <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-extrabold text-slate-900 m-0">Weekly Schedule</h2>
+                <div className="text-sm font-semibold text-slate-500">
                     {weekDays[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {weekDays[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </div>
             </div>
 
-            <div className="weekly-view">
+            <div className="grid grid-cols-7 gap-4">
                 {weekDays.map((date, i) => {
                     const dayPosts = getPostsForDate(date);
                     const isToday = date.toDateString() === today.toDateString();
-                    
+                    const pastDay = isPast(date);
+
                     return (
-                        <div key={i} className="week-day-card">
-                            <div className="day-header">
-                                <div className="day-name">{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                                <div className={`day-number ${isToday ? 'is-today' : ''}`}>{date.getDate()}</div>
+                        <div key={i} className={`relative bg-light-card rounded-[20px] border border-slate-200 min-h-[200px] flex flex-col overflow-hidden transition-all duration-200 ${pastDay ? 'opacity-60 grayscale cursor-default' : 'hover:border-slate-200 hover:shadow-[0_10px_30px_rgba(0,0,0,0.3)]'}`}>
+                            {pastDay && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04] z-0">
+                                    <X size={140} strokeWidth={1.5} className="mt-12" />
+                                </div>
+                            )}
+                            <div className="relative z-10 p-3 bg-slate-50 border-b border-slate-200 flex flex-col items-center justify-center">
+                                <div className={`text-[11px] font-extrabold uppercase tracking-[1px] ${isToday ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                </div>
+                                <div className={`mt-1 flex items-center justify-center w-8 h-8 rounded-xl text-base font-black transition-all duration-200 ${isToday ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]' : 'text-slate-900'}`}>
+                                    {date.getDate()}
+                                </div>
                             </div>
-                            <div className="day-content">
+                            <div className="relative z-10 p-3 flex flex-col gap-2 flex-1">
                                 {dayPosts.length > 0 ? (
                                     dayPosts.map(post => {
                                         const color = brandColors[post.social_account] || '#002B72';
                                         return (
-                                            <div 
-                                                key={post.id} 
-                                                className="post-pill"
-                                                style={{ 
-                                                    background: `${color}10`,
-                                                    borderColor: `${color}30`,
-                                                    color: color
+                                            <div
+                                                key={post.id}
+                                                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${pastDay ? 'cursor-default pointer-events-none' : 'cursor-pointer'}`}
+                                                style={{ background: `${color}10`, borderColor: `${color}30`, color: color }}
+                                                title={pastDay ? undefined : post.title}
+                                                onClick={(e) => {
+                                                    if (!pastDay) {
+                                                        window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank');
+                                                    }
                                                 }}
-                                                title={post.title}
-                                                onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
                                             >
                                                 {getIcon(post.post_type)}
-                                                <span>{post.title || 'Untitled'}</span>
+                                                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{post.title || 'Untitled'}</span>
                                             </div>
                                         );
                                     })
                                 ) : (
-                                    <div className="empty-state">
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-2 opacity-50">
                                         <CalendarIcon size={16} />
-                                        <span style={{ fontSize: '10px', fontWeight: 700 }}>Free</span>
+                                        <span className="text-[10px] font-bold">Free</span>
                                     </div>
                                 )}
                             </div>

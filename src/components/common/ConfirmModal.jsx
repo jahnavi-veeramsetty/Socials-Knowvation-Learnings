@@ -3,115 +3,28 @@ import { AlertCircle, X } from 'lucide-react';
 
 const ConfirmModal = ({ title, message, onConfirm, onCancel, onDiscard, confirmText = 'Save & Exit', discardText = 'Discard' }) => {
     return (
-        <div className="modal-overlay">
-            <style>{`
-                .modal-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0, 43, 114, 0.4);
-                    backdrop-filter: blur(8px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 9999;
-                    animation: fadeIn 0.2s ease-out;
-                }
-                .confirm-modal {
-                    background: white;
-                    width: 440px;
-                    padding: 40px;
-                    border-radius: 32px;
-                    box-shadow: 0 25px 50px -12px rgba(0, 43, 114, 0.25);
-                    text-align: center;
-                    position: relative;
-                }
-                .modal-icon {
-                    width: 64px;
-                    height: 64px;
-                    background: #fffbeb;
-                    color: #f59e0b;
-                    border-radius: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin: 0 auto 24px;
-                    transform: rotate(-5deg);
-                }
-                .confirm-modal h2 {
-                    font-size: 24px;
-                    font-weight: 800;
-                    color: #002B72;
-                    margin: 0 0 12px;
-                    letter-spacing: -0.5px;
-                }
-                .confirm-modal p {
-                    font-size: 15px;
-                    color: #64748b;
-                    line-height: 1.6;
-                    margin-bottom: 32px;
-                }
-                .modal-actions {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-                .modal-btn {
-                    width: 100%;
-                    padding: 14px;
-                    border-radius: 14px;
-                    font-weight: 700;
-                    font-size: 15px;
-                    cursor: pointer;
-                    border: none;
-                    transition: all 0.2s;
-                }
-                .btn-primary {
-                    background: #002B72;
-                    color: white;
-                    box-shadow: 0 4px 12px rgba(0, 43, 114, 0.2);
-                }
-                .btn-primary:hover {
-                    background: #001f54;
-                    transform: translateY(-1px);
-                }
-                .btn-danger {
-                    background: #fff1f0;
-                    color: #ff4d4f;
-                }
-                .btn-danger:hover {
-                    background: #ffccc7;
-                }
-                .btn-ghost {
-                    background: transparent;
-                    color: #94a3b8;
-                }
-                .btn-ghost:hover {
-                    color: #64748b;
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: scale(0.95); }
-                    to { opacity: 1; transform: scale(1); }
-                }
-            `}</style>
-
-            <div className="confirm-modal">
-                <div className="modal-icon">
+        <div className="fixed inset-0 bg-brand/40 backdrop-blur-lg flex items-center justify-center z-[9999] animate-[fadeIn_0.2s_ease-out]">
+            <div className="bg-white w-[440px] p-10 rounded-[32px] shadow-[0_25px_50px_-12px_rgba(0,43,114,0.25)] text-center relative">
+                <div className="w-16 h-16 bg-amber-50 text-amber-400 rounded-[20px] flex items-center justify-center mx-auto mb-6 -rotate-[5deg]">
                     <AlertCircle size={32} />
                 </div>
-                <h2>{title}</h2>
-                <p>{message}</p>
-                <div className="modal-actions">
-                    <button className="modal-btn btn-primary" onClick={onConfirm}>
-                        {confirmText}
-                    </button>
+                <h2 className="text-2xl font-extrabold text-brand m-0 mb-3 tracking-[-0.5px]">{title}</h2>
+                <p className="text-sm text-slate-500 leading-[1.6] mb-8">{message}</p>
+                <div className="flex flex-col gap-3">
+                    <button
+                        className="w-full py-3.5 rounded-2xl font-bold text-[15px] cursor-pointer border-none transition-all duration-200 bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)] hover:bg-brand-hover hover:-translate-y-px"
+                        onClick={onConfirm}
+                    >{confirmText}</button>
                     {onDiscard && (
-                        <button className="modal-btn btn-danger" onClick={onDiscard}>
-                            {discardText}
-                        </button>
+                        <button
+                            className="w-full py-3.5 rounded-2xl font-bold text-[15px] cursor-pointer border-none transition-all duration-200 bg-red-50 text-red-400 hover:bg-red-100"
+                            onClick={onDiscard}
+                        >{discardText}</button>
                     )}
-                    <button className="modal-btn btn-ghost" onClick={onCancel}>
-                        Cancel
-                    </button>
+                    <button
+                        className="w-full py-3.5 rounded-2xl font-bold text-[15px] cursor-pointer border-none transition-all duration-200 bg-transparent text-slate-500 hover:text-slate-600"
+                        onClick={onCancel}
+                    >Cancel</button>
                 </div>
             </div>
         </div>

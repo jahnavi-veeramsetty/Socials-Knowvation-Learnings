@@ -11,159 +11,93 @@ const AccountOverview = ({ posts, brandColors, today, weekRange, orgId }) => {
     };
 
     return (
-        <div className="account-overview-section" style={{ marginTop: '48px' }}>
-            <style>{`
-                .section-header h2 {
-                    font-size: 20px;
-                    font-weight: 800;
-                    color: #ffffff;
-                    margin-bottom: 24px;
-                }
-                .accounts-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 24px;
-                }
-                .account-card {
-                    background: #0a1936;
-                    padding: 24px;
-                    border-radius: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                    display: flex;
-                    flex-direction: column;
-                }
-                .account-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    margin-bottom: 20px;
-                }
-                .account-color {
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 4px;
-                }
-                .account-header h4 {
-                    margin: 0;
-                    font-size: 16px;
-                    font-weight: 800;
-                    color: #ffffff;
-                }
-                .account-stats-row {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 12px 0;
-                    border-top: 1px solid rgba(255, 255, 255, 0.05);
-                }
-                .account-stat-label {
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: #94a3b8;
-                }
-                .account-stat-value {
-                    font-size: 14px;
-                    font-weight: 800;
-                    color: #ffffff;
-                }
-                .upcoming-posts {
-                    margin-top: 16px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-                .upcoming-title {
-                    font-size: 11px;
-                    font-weight: 800;
-                    color: #64748b;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    margin-bottom: 4px;
-                }
-                .mini-post-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 8px 12px;
-                    background: rgba(255, 255, 255, 0.02);
-                    border-radius: 10px;
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: #cbd5e1;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    transition: all 0.2s;
-                }
-                .mini-post-item:hover {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: white;
-                }
-                .mini-post-date {
-                    font-size: 10px;
-                    color: #64748b;
-                    margin-left: auto;
-                }
-            `}</style>
+        <div className="mt-12">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-6">Account Overview</h2>
 
-            <div className="section-header">
-                <h2>Account Overview</h2>
-            </div>
-
-            <div className="accounts-grid">
+            <div className="grid grid-cols-3 gap-6">
                 {['KLM', 'KLS', 'KLC'].map(acc => {
                     const color = brandColors[acc] || '#002B72';
                     const name = acc === 'KLM' ? 'KL Main' : acc === 'KLS' ? 'KL Select' : 'KL Community';
-                    
-                    const accPostsMonth = posts.filter(p => {
+
+                    const accApprovedPosts = posts.filter(p => p.social_account === acc && p.status === 'approved');
+
+                    const accPostsMonth = accApprovedPosts.filter(p => {
                         if (!p.scheduled_date) return false;
                         const d = new Date(p.scheduled_date);
-                        return p.social_account === acc && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+                        return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
                     }).length;
 
-                    const accPostsWeek = posts.filter(p => {
+                    const accPostsWeek = accApprovedPosts.filter(p => {
                         if (!p.scheduled_date) return false;
                         const d = new Date(p.scheduled_date);
-                        return p.social_account === acc && d >= weekRange.start && d <= weekRange.end;
+                        return d >= weekRange.start && d <= weekRange.end;
                     }).length;
 
-                    // Get next 3 upcoming approved posts
-                    const upcomingPosts = posts
-                        .filter(p => p.social_account === acc && p.status === 'approved' && new Date(p.scheduled_date) >= today)
+                    const reelsCount = accApprovedPosts.filter(p => p.post_type?.toLowerCase().includes('reel')).length;
+                    const carouselsCount = accApprovedPosts.filter(p => p.post_type?.toLowerCase().includes('carousel')).length;
+                    const storiesCount = accApprovedPosts.filter(p => p.post_type?.toLowerCase().includes('story')).length;
+
+                    const upcomingPosts = accApprovedPosts
+                        .filter(p => new Date(p.scheduled_date) >= today)
                         .sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date))
                         .slice(0, 3);
 
                     return (
-                        <div key={acc} className="account-card">
-                            <div className="account-header">
-                                <div className="account-color" style={{ background: color }}></div>
-                                <h4>{name}</h4>
+                        <div key={acc} className="bg-light-card p-6 rounded-3xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex flex-col">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="w-3 h-3 rounded-[4px]" style={{ background: color }}></div>
+                                <h4 className="m-0 text-base font-extrabold text-slate-900">{name}</h4>
                             </div>
-                            <div className="account-stats-row">
-                                <span className="account-stat-label">This Month</span>
-                                <span className="account-stat-value">{accPostsMonth} posts</span>
+                            <div className="flex justify-between py-3 border-t border-slate-200">
+                                <span className="text-[13px] font-semibold text-slate-500">This Month</span>
+                                <span className="text-sm font-extrabold text-slate-900">{accPostsMonth} posts</span>
                             </div>
-                            <div className="account-stats-row">
-                                <span className="account-stat-label">This Week</span>
-                                <span className="account-stat-value">{accPostsWeek} posts</span>
+                            <div className="flex justify-between py-3 border-t border-slate-200">
+                                <span className="text-[13px] font-semibold text-slate-500">This Week</span>
+                                <span className="text-sm font-extrabold text-slate-900">{accPostsWeek} posts</span>
                             </div>
 
-                            <div className="upcoming-posts">
-                                <div className="upcoming-title">Upcoming Content</div>
+                            {(reelsCount > 0 || carouselsCount > 0 || storiesCount > 0) && (
+                                <div className="mt-1 mb-2 flex flex-wrap gap-2">
+                                    {reelsCount > 0 && (
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                                            <Film size={12} className="text-slate-400" />
+                                            <span className="text-[11px] font-bold text-slate-600">{reelsCount} {reelsCount === 1 ? 'Reel' : 'Reels'}</span>
+                                        </div>
+                                    )}
+                                    {carouselsCount > 0 && (
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                                            <Layers size={12} className="text-slate-400" />
+                                            <span className="text-[11px] font-bold text-slate-600">{carouselsCount} {carouselsCount === 1 ? 'Carousel' : 'Carousels'}</span>
+                                        </div>
+                                    )}
+                                    {storiesCount > 0 && (
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                                            <Smartphone size={12} className="text-slate-400" />
+                                            <span className="text-[11px] font-bold text-slate-600">{storiesCount} {storiesCount === 1 ? 'Story' : 'Stories'}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="mt-4 flex flex-col gap-2">
+                                <div className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[0.5px] mb-1">Upcoming Content</div>
                                 {upcomingPosts.length > 0 ? (
                                     upcomingPosts.map(post => (
-                                        <div key={post.id} className="mini-post-item" onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')} style={{ cursor: 'pointer' }}>
+                                        <div
+                                            key={post.id}
+                                            className="flex items-center gap-2 py-2 px-3 bg-slate-50 rounded-xl text-xs font-semibold text-slate-600 border border-slate-200 transition-all duration-200 cursor-pointer hover:bg-slate-100 hover:text-slate-900"
+                                            onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
+                                        >
                                             {getIcon(post.post_type)}
-                                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
-                                                {post.title || 'Untitled'}
-                                            </span>
-                                            <span className="mini-post-date">
+                                            <span className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px]">{post.title || 'Untitled'}</span>
+                                            <span className="text-[10px] text-slate-500 ml-auto">
                                                 {new Date(post.scheduled_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                             </span>
                                         </div>
                                     ))
                                 ) : (
-                                    <div style={{ fontSize: '11px', color: '#cbd5e1', fontStyle: 'italic', padding: '8px' }}>
-                                        No upcoming posts
-                                    </div>
+                                    <div className="text-[11px] text-slate-600 italic py-2">No upcoming posts</div>
                                 )}
                             </div>
                         </div>

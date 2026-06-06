@@ -2,9 +2,9 @@ import React from 'react';
 
 const Klc = () => {
     return (
-        <div style={{ padding: '48px', fontFamily: 'Inter, sans-serif', background: '#010D2C', minHeight: '100vh', color: 'white' }}>
-            <h1 style={{ color: 'white', fontSize: '28px', fontWeight: 800 }}>KLC Socials</h1>
-            <p style={{ color: '#94a3b8' }}>Manage your KLC social media content and analytics.</p>
+        <div className="p-12 font-sans bg-light-bg min-h-screen text-slate-900">
+            <h1 className="text-slate-900 text-[28px] font-extrabold">KLC Socials</h1>
+            <p className="text-slate-500">Manage your KLC social media content and analytics.</p>
         </div>
     );
 };

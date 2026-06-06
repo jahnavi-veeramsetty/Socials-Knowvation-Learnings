@@ -3,121 +3,33 @@ import { Users, UserPlus, Shield } from 'lucide-react';
 
 const TeamSettings = ({ members }) => {
     return (
-        <div className="settings-section">
-            <style>{`
-                .section-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-end;
-                    margin-bottom: 24px;
-                }
-                .section-header h2 {
-                    color: #002B72;
-                    font-size: 20px;
-                    font-weight: 800;
-                    margin: 0 0 4px;
-                }
-                .section-header p {
-                    color: #666;
-                    font-size: 14px;
-                }
-                .invite-btn {
-                    background: rgba(0, 43, 114, 0.08);
-                    color: #002B72;
-                    padding: 8px 16px;
-                    border-radius: 10px;
-                    font-weight: 700;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    border: none;
-                    cursor: pointer;
-                    font-size: 13px;
-                }
-                .member-list {
-                    background: white;
-                    border-radius: 20px;
-                    border: 1px solid #f0f0f0;
-                    overflow: hidden;
-                }
-                .member-item {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 16px 24px;
-                    border-bottom: 1px solid #f9fafb;
-                }
-                .member-item:last-child {
-                    border-bottom: none;
-                }
-                .user-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                }
-                .user-avatar {
-                    width: 36px;
-                    height: 36px;
-                    background: #f0f4ff;
-                    color: #002B72;
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .user-details h4 {
-                    margin: 0;
-                    font-size: 14px;
-                    font-weight: 700;
-                    color: #111;
-                }
-                .user-details p {
-                    margin: 0;
-                    font-size: 12px;
-                    color: #777;
-                }
-                .role-badge {
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                    background: #f1f5f9;
-                    color: #475569;
-                    padding: 4px 10px;
-                    border-radius: 999px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: capitalize;
-                }
-                .role-badge.owner {
-                    background: #fef3c7;
-                    color: #92400e;
-                }
-            `}</style>
-
-            <div className="section-header">
+        <div>
+            {/* Header */}
+            <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h2>Team Members</h2>
-                    <p>Manage who has access to this organization.</p>
+                    <h2 className="text-brand text-xl font-extrabold m-0 mb-1">Team Members</h2>
+                    <p className="text-slate-500 text-sm m-0">Manage who has access to this organization.</p>
                 </div>
-                <button className="invite-btn">
+                <button className="bg-brand/[0.08] text-brand py-2 px-4 rounded-xl font-bold flex items-center gap-1.5 border-none cursor-pointer text-[13px] hover:bg-brand/15">
                     <UserPlus size={16} />
                     Invite
                 </button>
             </div>
 
-            <div className="member-list">
+            {/* Member List */}
+            <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden">
                 {members.map((member, i) => (
-                    <div key={i} className="member-item">
-                        <div className="user-info">
-                            <div className="user-avatar">
+                    <div key={i} className="flex justify-between items-center py-4 px-6 border-b border-slate-50 last:border-b-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-blue-50 text-brand rounded-xl flex items-center justify-center">
                                 <Users size={18} />
                             </div>
-                            <div className="user-details">
-                                <h4>{member.full_name || `Member ${i + 1}`}</h4>
-                                <p>{member.email}</p>
+                            <div>
+                                <h4 className="m-0 text-sm font-bold text-gray-900">{member.full_name || `Member ${i + 1}`}</h4>
+                                <p className="m-0 text-xs text-slate-500">{member.email}</p>
                             </div>
                         </div>
-                        <div className={`role-badge ${member.role}`}>
+                        <div className={`flex items-center gap-1 py-1 px-2.5 rounded-full text-[11px] font-bold capitalize ${member.role === 'owner' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
                             <Shield size={10} />
                             {member.role}
                         </div>

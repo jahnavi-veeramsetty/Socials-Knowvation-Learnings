@@ -3,7 +3,7 @@ import { Trash2, CheckCircle2, Circle } from 'lucide-react';
 
 const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
     const getDifficultyColor = (diff) => {
-        switch(diff) {
+        switch (diff) {
             case 'easy': return '#4ade80';
             case 'medium': return '#fbbf24';
             case 'hard': return '#f87171';
@@ -12,150 +12,45 @@ const QuestionCard = ({ question, index, onRemove, onTogglePosted }) => {
     };
 
     return (
-        <div className={`question-display-card ${question.isPosted ? 'is-posted' : ''}`}>
-            <style>{`
-                .question-display-card {
-                    background: #0a1936;
-                    border-radius: 20px;
-                    padding: 24px;
-                    margin-bottom: 20px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                    transition: all 0.3s ease;
-                    position: relative;
-                }
-                .question-display-card.is-posted {
-                    background: rgba(10, 25, 54, 0.6);
-                    opacity: 0.8;
-                }
-                .question-display-card:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-                }
-                .card-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 16px;
-                }
-                .q-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                }
-                .q-num {
-                    font-weight: 800;
-                    color: #ffffff;
-                    font-size: 14px;
-                }
-                .diff-badge {
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    padding: 4px 10px;
-                    border-radius: 999px;
-                    color: white;
-                }
-                .q-text {
-                    font-size: 17px;
-                    font-weight: 600;
-                    color: #ffffff;
-                    margin: 0 0 20px;
-                    line-height: 1.5;
-                }
-                .options-grid-display {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 12px;
-                }
-                .opt-item-display {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    padding: 12px 16px;
-                    border-radius: 12px;
-                    background: rgba(255, 255, 255, 0.02);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    font-size: 14px;
-                    color: #cbd5e1;
-                }
-                .opt-item-display.is-correct {
-                    background: rgba(74, 222, 128, 0.1);
-                    border-color: #4ade80;
-                    color: #4ade80;
-                    font-weight: 600;
-                }
-                .card-actions {
-                    display: flex;
-                    gap: 8px;
-                }
-                .remove-card-btn {
-                    color: #ff4d4f;
-                    background: rgba(239, 68, 68, 0.1);
-                    border: none;
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .remove-card-btn:hover {
-                    background: #ff4d4f;
-                    color: white;
-                }
-                .posted-toggle {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: #64748b;
-                    border: none;
-                    padding: 6px 16px;
-                    border-radius: 8px;
-                    font-size: 12px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                }
-                .posted-toggle.active {
-                    background: #4ade80;
-                    color: white;
-                }
-            `}</style>
-
-            <div className="card-header">
-                <div className="q-info">
-                    <span className="q-num">Q{index + 1}</span>
-                    <span 
-                        className="diff-badge" 
+        <div className={`bg-light-card rounded-[20px] p-6 mb-5 border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-all duration-300 relative hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] ${question.isPosted ? 'bg-[rgba(10,25,54,0.6)] opacity-80' : ''}`}>
+            {/* Card Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                    <span className="font-extrabold text-slate-900 text-sm">Q{index + 1}</span>
+                    <span
+                        className="text-[11px] font-bold uppercase py-1 px-2.5 rounded-full text-slate-900"
                         style={{ background: getDifficultyColor(question.difficulty) }}
                     >
                         {question.difficulty}
                     </span>
-                    
-                    <button 
-                        className={`posted-toggle ${question.isPosted ? 'active' : ''}`}
+                    <button
+                        className={`flex items-center gap-1.5 py-1.5 px-4 rounded-lg text-xs font-bold cursor-pointer transition-all duration-200 border-none ${question.isPosted ? 'bg-green-400 text-white' : 'bg-slate-100 text-slate-500'}`}
                         onClick={() => onTogglePosted(index)}
                     >
                         {question.isPosted && <CheckCircle2 size={14} />}
                         <span>Posted</span>
                     </button>
                 </div>
-                <div className="card-actions">
-                    <button className="remove-card-btn" onClick={() => onRemove(index)}>
+                <div className="flex gap-2">
+                    <button
+                        className="text-red-400 bg-red-400/10 border-none w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-red-400 hover:text-white"
+                        onClick={() => onRemove(index)}
+                    >
                         <Trash2 size={16} />
                     </button>
                 </div>
             </div>
 
-            <p className="q-text">{question.text}</p>
+            {/* Question Text */}
+            <p className="text-[17px] font-semibold text-slate-900 m-0 mb-5 leading-[1.5]">{question.text}</p>
 
-            <div className="options-grid-display">
+            {/* Options */}
+            <div className="grid grid-cols-2 gap-3">
                 {question.options.map((opt, i) => (
-                    <div key={i} className={`opt-item-display ${question.correctOption === i ? 'is-correct' : ''}`}>
+                    <div
+                        key={i}
+                        className={`flex items-center gap-2.5 py-3 px-4 rounded-xl border text-sm font-medium transition-all duration-200 ${question.correctOption === i ? 'bg-green-400/10 border-green-400 text-green-400 font-semibold' : 'bg-slate-50 border-slate-200 text-slate-600'}`}
+                    >
                         {question.correctOption === i ? <CheckCircle2 size={16} /> : <Circle size={16} color="#ccc" />}
                         <span>{opt}</span>
                     </div>

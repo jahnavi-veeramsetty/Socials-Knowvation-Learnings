@@ -2,96 +2,43 @@ import React from 'react';
 import { Lock } from 'lucide-react';
 
 const ProfileSettings = ({ email, fullName, setFullName }) => {
-    return (
-        <div className="settings-section">
-            <style>{`
-                .section-header {
-                    margin-bottom: 24px;
-                }
-                .section-header h2 {
-                    color: #ffffff;
-                    font-size: 20px;
-                    font-weight: 800;
-                    margin: 0 0 4px;
-                }
-                .section-header p {
-                    color: #64748b;
-                    font-size: 14px;
-                }
-                .settings-card {
-                    background: #0a1936;
-                    border-radius: 20px;
-                    padding: 24px;
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                }
-                .form-group {
-                    margin-bottom: 20px;
-                }
-                .form-label {
-                    display: block;
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: #cbd5e1;
-                    margin-bottom: 6px;
-                }
-                .form-input {
-                    width: 100%;
-                    padding: 12px 16px;
-                    border-radius: 10px;
-                    border: 1.5px solid rgba(255, 255, 255, 0.05);
-                    font-size: 14px;
-                    outline: none;
-                    transition: all 0.2s;
-                    box-sizing: border-box;
-                    background: rgba(255, 255, 255, 0.05);
-                    color: white;
-                }
-                .form-input:focus {
-                    border-color: #002B72;
-                    background: rgba(255, 255, 255, 0.08);
-                }
-                .danger-zone {
-                    margin-top: 32px;
-                    padding-top: 24px;
-                    border-top: 1px solid rgba(255, 255, 255, 0.05);
-                }
-                .danger-zone h3 {
-                    color: #ef4444;
-                    font-size: 14px;
-                    margin-bottom: 12px;
-                }
-            `}</style>
+    const inputClass = "w-full py-3 px-4 rounded-xl border-[1.5px] border-slate-200 text-sm outline-none transition-all duration-200 box-border bg-slate-100 text-slate-900 focus:border-brand focus:bg-slate-100";
 
-            <div className="section-header">
-                <h2>My Profile</h2>
-                <p>Manage your personal information and security.</p>
+    return (
+        <div>
+            {/* Header */}
+            <div className="mb-6">
+                <h2 className="text-slate-900 text-xl font-extrabold m-0 mb-1">My Profile</h2>
+                <p className="text-slate-500 text-sm m-0">Manage your personal information and security.</p>
             </div>
 
-            <div className="settings-card">
-                <div className="form-group">
-                    <label className="form-label">Email Address</label>
-                    <input 
-                        className="form-input"
+            {/* Card */}
+            <div className="bg-light-card rounded-[20px] p-6 border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+                <div className="mb-5">
+                    <label className="block text-[13px] font-semibold text-slate-600 mb-1.5">Email Address</label>
+                    <input
+                        className={inputClass}
                         value={email}
                         disabled
                         style={{ background: 'rgba(255, 255, 255, 0.02)', color: '#64748b' }}
                     />
                 </div>
 
-                <div className="form-group">
-                    <label className="form-label">Full Name</label>
-                    <input 
-                        className="form-input"
+                <div className="mb-5">
+                    <label className="block text-[13px] font-semibold text-slate-600 mb-1.5">Full Name</label>
+                    <input
+                        className={inputClass}
                         placeholder="Your Name"
                         value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        onChange={e => setFullName(e.target.value)}
                     />
                 </div>
 
-                <div className="danger-zone">
-                    <h3>Security</h3>
-                    <button className="form-input" style={{ background: 'rgba(255, 255, 255, 0.02)', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="mt-8 pt-6 border-t border-slate-200">
+                    <h3 className="text-red-500 text-sm mb-3">Security</h3>
+                    <button
+                        className="w-full py-3 px-4 rounded-xl border-[1.5px] border-slate-200 text-sm outline-none bg-slate-50 text-slate-900 text-left flex items-center gap-2.5 cursor-pointer"
+                    >
                         <Lock size={16} />
                         Change Password
                     </button>
