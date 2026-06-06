@@ -18,17 +18,14 @@ const BrandSettings = ({ brandColors, setBrandColors, readOnly = false }) => {
     return (
         <div className="flex flex-col gap-8 py-5">
             {/* Section Header */}
-            <div className="flex items-center gap-3">
-                <Palette size={22} color="#002B72" />
-                <div className="flex-1 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-lg font-extrabold text-slate-900 m-0">Brand Colors</h2>
-                        <p className="text-sm text-slate-500 mt-1 mb-0">Select a card below, then use the color picker to set its color.</p>
-                    </div>
+            <div className="mb-6">
+                <div className="flex items-center justify-between mb-1">
+                    <h2 className="text-slate-900 text-xl font-extrabold m-0">Brand Colors</h2>
                     {readOnly && (
                         <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-500 py-1 px-2.5 rounded-lg text-[11px] font-bold uppercase tracking-[0.5px]">View Only</span>
                     )}
                 </div>
+                <p className="text-slate-500 text-sm m-0">Select a card below, then use the color picker to set its color.</p>
             </div>
 
             {/* Content */}

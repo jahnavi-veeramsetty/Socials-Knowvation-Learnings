@@ -9,6 +9,7 @@ import StatCards from '../components/dashboard/StatCards';
 import WeeklySchedule from '../components/dashboard/WeeklySchedule';
 import AccountOverview from '../components/dashboard/AccountOverview';
 import ActivityFeed from '../components/dashboard/ActivityFeed';
+import NotificationsPanel from '../components/dashboard/NotificationsPanel';
 
 const Dashboard = () => {
     const { orgId } = useParams();
@@ -16,6 +17,7 @@ const Dashboard = () => {
     const [posts, setPosts] = useState([]);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [brandColors, setBrandColors] = useState({
         KLM: '#002B72',
         KLS: '#4f46e5',
@@ -36,7 +38,7 @@ const Dashboard = () => {
             .select('brand_colors')
             .eq('id', orgId)
             .single();
-        
+
         if (data?.brand_colors) {
             setBrandColors(data.brand_colors);
         }
@@ -138,38 +140,47 @@ const Dashboard = () => {
         <div className="px-12 py-8 bg-light-bg min-h-screen">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-slate-900 text-[32px] font-black m-0 tracking-[-1px]">Dashboard</h1>
-                <button className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all duration-200 cursor-pointer relative hover:shadow-md hover:-translate-y-0.5">
+                <button
+                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all duration-200 cursor-pointer relative hover:shadow-md hover:-translate-y-0.5"
+                    onClick={() => setIsNotificationsOpen(true)}
+                >
                     <Bell size={18} strokeWidth={2.5} />
                     <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
             </div>
 
-            <StatCards 
-                approvedPosts={approvedPosts} 
-                scheduledThisWeek={scheduledThisWeek} 
-                pendingReview={pendingReview} 
+            <StatCards
+                approvedPosts={approvedPosts}
+                scheduledThisWeek={scheduledThisWeek}
+                pendingReview={pendingReview}
             />
 
-            <WeeklySchedule 
-                weekDays={weekDays} 
-                today={today} 
-                getPostsForDate={getPostsForDate} 
-                brandColors={brandColors} 
-                orgId={orgId} 
+            <WeeklySchedule
+                weekDays={weekDays}
+                today={today}
+                getPostsForDate={getPostsForDate}
+                brandColors={brandColors}
+                orgId={orgId}
             />
 
-            <AccountOverview 
-                posts={posts} 
-                brandColors={brandColors} 
-                today={today} 
-                weekRange={weekRange} 
-                orgId={orgId} 
+            <AccountOverview
+                posts={posts}
+                brandColors={brandColors}
+                today={today}
+                weekRange={weekRange}
+                orgId={orgId}
             />
 
-            <ActivityFeed 
-                activities={activities} 
-                getActivityIcon={getActivityIcon} 
-                getActivityStyle={getActivityStyle} 
+            <ActivityFeed
+                activities={activities}
+                getActivityIcon={getActivityIcon}
+                getActivityStyle={getActivityStyle}
+            />
+
+            <NotificationsPanel
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
+                activities={activities}
             />
         </div>
     );

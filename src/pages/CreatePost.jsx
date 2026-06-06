@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ChevronLeft,
@@ -38,6 +38,12 @@ const CreatePost = () => {
     const [userRole, setUserRole] = useState(null);
     const [postStatus, setPostStatus] = useState(null);
 
+    const [orgMembers, setOrgMembers] = useState([]);
+    const [mentionQuery, setMentionQuery] = useState(null);
+    const [mentionCursor, setMentionCursor] = useState(0);
+    const notesRef = useRef(null);
+    const backdropRef = useRef(null);
+
     const [formData, setFormData] = useState({
         social_account: 'KLM',
         post_type: 'reel',
@@ -65,6 +71,25 @@ const CreatePost = () => {
             .eq('organization_id', orgId).eq('user_id', user.id).single();
         const fetchedUserRole = memberData?.role;
         setUserRole(fetchedUserRole);
+
+        const { data: memberDataList } = await supabase
+            .from('organization_members').select('user_id')
+            .eq('organization_id', orgId);
+        
+        if (memberDataList && memberDataList.length > 0) {
+            const userIds = memberDataList.map(m => m.user_id);
+            const { data: profilesList } = await supabase
+                .from('profiles')
+                .select('id, full_name, email')
+                .in('id', userIds);
+                
+            if (profilesList) {
+                setOrgMembers(profilesList.map(p => ({
+                    id: p.id,
+                    name: p.full_name || p.email?.split('@')[0] || 'Unknown'
+                })));
+            }
+        }
 
         if (postId) {
             setLoading(true);
@@ -117,6 +142,62 @@ const CreatePost = () => {
                 ? prev.platforms.filter(plat => plat !== p)
                 : [...prev.platforms, p],
         }));
+    };
+
+    const handleNotesChange = (e) => {
+        const val = e.target.value;
+        setFormData({ ...formData, notes: val });
+        
+        const cursor = e.target.selectionStart;
+        const textBefore = val.substring(0, cursor);
+        const match = textBefore.match(/(?:^|\s)@(\S*)$/);
+        
+        if (match) {
+            setMentionQuery(match[1].toLowerCase());
+            setMentionCursor(cursor - match[1].length - 1);
+        } else {
+            setMentionQuery(null);
+        }
+    };
+
+    const handleSelectMention = (member) => {
+        if (!notesRef.current) return;
+        const val = formData.notes;
+        const before = val.substring(0, mentionCursor);
+        const after = val.substring(notesRef.current.selectionStart);
+        
+        const newText = `${before}@${member.name} ${after}`;
+        setFormData({ ...formData, notes: newText });
+        setMentionQuery(null);
+        
+        setTimeout(() => {
+            if (notesRef.current) {
+                notesRef.current.focus();
+                const newCursor = before.length + member.name.length + 2;
+                notesRef.current.setSelectionRange(newCursor, newCursor);
+            }
+        }, 0);
+    };
+
+    const filteredMembers = mentionQuery !== null 
+        ? orgMembers.filter(m => m.name.toLowerCase().includes(mentionQuery))
+        : [];
+
+    const handleScroll = (e) => {
+        if (backdropRef.current) {
+            backdropRef.current.scrollTop = e.target.scrollTop;
+        }
+    };
+
+    const renderHighlightedNotes = () => {
+        if (!formData.notes) return null;
+        const parts = formData.notes.split(/(@\S+)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('@')) {
+                return <span key={i} className="text-brand bg-brand/10 rounded-sm shadow-[0_0_0_2px_rgba(0,43,114,0.1)]">{part}</span>;
+            }
+            return <span key={i}>{part}</span>;
+        });
     };
 
     const handleSave = async (status) => {
@@ -263,136 +344,208 @@ const CreatePost = () => {
             </header>
 
             {/* Body Layout */}
-            <div className="grid grid-cols-[350px_1fr] flex-1 h-[calc(100vh-73px)]">
-                {/* Sidebar */}
-                <aside className="border-r border-slate-200 py-8 px-8 overflow-y-auto bg-light-card flex flex-col gap-7">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Social Account</label>
-                        <CustomSelect 
-                            className={sidebarInputClass} 
-                            value={formData.social_account} 
-                            onChange={val => setFormData({ ...formData, social_account: val })}
-                            options={[
-                                { value: 'KLM', label: 'KL Main (KLM)' },
-                                { value: 'KLS', label: 'KL Select (KLS)' },
-                                { value: 'KLC', label: 'KL Community (KLC)' }
-                            ]}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Post Type</label>
-                        <CustomSelect 
-                            className={sidebarInputClass} 
-                            value={formData.post_type} 
-                            onChange={val => setFormData({ ...formData, post_type: val })}
-                            options={[
-                                { value: 'reel', label: 'Reel' },
-                                { value: 'story', label: 'Story' },
-                                { value: 'carousel', label: 'Carousel' }
-                            ]}
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Target Platforms</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {['Instagram', 'LinkedIn', 'YouTube'].map(p => (
-                                <div
-                                    key={p}
-                                    className={`py-2.5 rounded-xl border-[1.5px] text-xs font-bold text-center cursor-pointer transition-all duration-200 ${formData.platforms.includes(p) ? 'bg-brand text-white border-brand shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-white hover:border-brand/50'}`}
-                                    onClick={() => togglePlatform(p)}
-                                >{p}</div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Scheduled Date</label>
-                        <input type="date" className={sidebarInputClass} value={formData.scheduled_date} onChange={e => setFormData({ ...formData, scheduled_date: e.target.value })} />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Hashtags</label>
-                        <textarea className={`${sidebarInputClass} h-20 resize-none italic`} placeholder="#hashtags" value={formData.hashtags} readOnly={!canEdit} onChange={e => setFormData({ ...formData, hashtags: e.target.value })} />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Reference Links</label>
-                        <textarea className={`${sidebarInputClass} h-[120px] resize-none`} placeholder="https://..." value={formData.reference_link} readOnly={!canEdit} onChange={e => setFormData({ ...formData, reference_link: e.target.value })} />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Internal Notes</label>
-                        <textarea className={`${sidebarInputClass} h-20 resize-none`} placeholder="Drafting notes..." value={formData.notes} readOnly={!canEdit} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
-                    </div>
-
-                    <div className="mt-5 p-5 bg-blue-500/10 rounded-2xl border border-blue-500/10 flex flex-col gap-2">
-                        <div className="flex gap-2 text-blue-400 items-center">
-                            <Info size={16} />
-                            <span className="text-xs font-extrabold">PRO TIP</span>
-                        </div>
-                        <p className="m-0 text-xs text-slate-500 leading-[1.5]">Drafts stay private until submitted.</p>
-                    </div>
-                </aside>
-
+            <div className="grid grid-cols-[1fr_350px] flex-1 h-[calc(100vh-73px)] overflow-hidden">
                 {/* Document Editor */}
-                <main className="py-10 px-10 overflow-y-auto bg-light-bg">
-                    <div className="max-w-[850px] mx-auto flex flex-col gap-10 bg-light-card py-20 px-[100px] shadow-[0_10px_40px_rgba(0,0,0,0.4)] rounded-sm min-h-[1000px] border border-white/[0.03]">
+                <main className="py-8 px-10 overflow-y-auto bg-[#f8fafc] flex flex-col gap-6">
+                    <div className="max-w-[850px] w-full mx-auto flex flex-col gap-6">
                         {loading ? (
                             <div className="py-10 text-center text-brand font-semibold">Loading post...</div>
                         ) : (
                             <>
-                                <input
-                                    className="text-[42px] font-extrabold border-none outline-none text-slate-900 w-full p-0 bg-transparent placeholder:text-slate-900/10"
-                                    placeholder="Untitled Post"
-                                    value={formData.title}
-                                    readOnly={!canEdit}
-                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                />
-
-                                {creatorName && (
-                                    <div className="flex items-center gap-2 -mt-7 mb-2.5 text-slate-500 text-[13px] font-semibold">
-                                        <Users size={14} />
-                                        <span>Created by {creatorName}</span>
+                                {/* Main Content Card */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col gap-8">
+                                    <div>
+                                        <input
+                                            className="text-[32px] font-black border-none outline-none text-slate-900 w-full p-0 bg-transparent placeholder:text-slate-300"
+                                            placeholder="Post Title"
+                                            value={formData.title}
+                                            readOnly={!canEdit}
+                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                        />
+                                        {creatorName && (
+                                            <div className="flex items-center gap-2 mt-2 text-slate-500 text-[13px] font-medium">
+                                                <Users size={14} />
+                                                <span>Created by {creatorName}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
 
-                                <div className="flex flex-col gap-3">
-                                    <label className="flex items-center gap-2.5 text-sm font-bold text-slate-500 pb-2 border-b border-slate-200">
-                                        <FileText size={16} />Caption
-                                    </label>
-                                    <textarea
-                                        className="w-full border-none outline-none text-base leading-[1.6] text-slate-600 resize-none font-[inherit] p-0 bg-transparent h-[120px]"
-                                        placeholder="Start writing your caption here..."
-                                        value={formData.caption}
-                                        readOnly={!canEdit}
-                                        onChange={e => setFormData({ ...formData, caption: e.target.value })}
-                                    />
+                                    <div className="flex flex-col gap-3">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                                            <FileText size={16} className="text-brand" />Caption
+                                        </label>
+                                        <textarea
+                                            className="w-full border border-slate-200 rounded-xl p-4 text-sm leading-[1.6] text-slate-700 resize-none outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all bg-slate-50 focus:bg-white h-[120px]"
+                                            placeholder="Write an engaging caption..."
+                                            value={formData.caption}
+                                            readOnly={!canEdit}
+                                            onChange={e => setFormData({ ...formData, caption: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col gap-3">
+                                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                                            <StickyNote size={16} className="text-brand" />Script / Core Content
+                                        </label>
+                                        <textarea
+                                            className="w-full border border-slate-200 rounded-xl p-4 text-sm leading-[1.8] text-slate-700 resize-none outline-none focus:border-brand focus:ring-4 focus:ring-brand/5 transition-all bg-slate-50 focus:bg-white min-h-[300px]"
+                                            placeholder="Draft your main content, script, or outline here..."
+                                            value={formData.script}
+                                            readOnly={!canEdit}
+                                            onChange={e => setFormData({ ...formData, script: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="flex flex-col gap-3">
-                                    <label className="flex items-center gap-2.5 text-sm font-bold text-slate-500 pb-2 border-b border-slate-200">
-                                        <StickyNote size={16} />Script / Core Content
-                                    </label>
-                                    <textarea
-                                        className="w-full border-none outline-none text-base leading-[1.8] text-slate-600 resize-none font-sans p-0 bg-transparent min-h-[500px]"
-                                        placeholder="Write your long-form script or content here..."
-                                        value={formData.script}
-                                        readOnly={!canEdit}
-                                        onChange={e => setFormData({ ...formData, script: e.target.value })}
-                                    />
+                                {/* Additional Info Card */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col gap-6">
+                                    <h3 className="text-base font-bold text-slate-900 m-0 border-b border-slate-100 pb-4">Additional Details</h3>
+                                    
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-[12px] font-extrabold text-slate-500 uppercase tracking-[0.5px]">Hashtags</label>
+                                            <textarea 
+                                                className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-700 resize-none outline-none focus:border-brand bg-slate-50 focus:bg-white h-[100px] italic" 
+                                                placeholder="#marketing #social" 
+                                                value={formData.hashtags} 
+                                                readOnly={!canEdit} 
+                                                onChange={e => setFormData({ ...formData, hashtags: e.target.value })} 
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-[12px] font-extrabold text-slate-500 uppercase tracking-[0.5px]">Reference Links</label>
+                                            <textarea 
+                                                className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-700 resize-none outline-none focus:border-brand bg-slate-50 focus:bg-white h-[100px]" 
+                                                placeholder="https://..." 
+                                                value={formData.reference_link} 
+                                                readOnly={!canEdit} 
+                                                onChange={e => setFormData({ ...formData, reference_link: e.target.value })} 
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <ImageUploadSection
-                                    initialImages={formData.uploadedImages?.length > 0 ? formData.uploadedImages : formData.images || []}
-                                    readOnly={!canEdit}
-                                    onImagesChange={newImages => setFormData({ ...formData, images: newImages })}
-                                />
+                                {/* Media Card */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                                    <h3 className="text-base font-bold text-slate-900 m-0 border-b border-slate-100 pb-4 mb-6">Media Assets</h3>
+                                    <ImageUploadSection
+                                        initialImages={formData.uploadedImages?.length > 0 ? formData.uploadedImages : formData.images || []}
+                                        readOnly={!canEdit}
+                                        onImagesChange={newImages => setFormData({ ...formData, images: newImages })}
+                                    />
+                                </div>
+                                
+                                <div className="h-10"></div>
                             </>
                         )}
                     </div>
                 </main>
+
+                {/* Sidebar */}
+                <aside className="border-l border-slate-200 py-8 px-8 overflow-y-auto bg-white flex flex-col gap-8 shadow-[-4px_0_24px_rgba(0,0,0,0.02)] z-10">
+                    <div className="flex flex-col gap-6">
+                        <h3 className="text-sm font-black text-slate-900 m-0 uppercase tracking-wide">Publishing Setup</h3>
+                        
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Social Account</label>
+                            <CustomSelect 
+                                className={sidebarInputClass} 
+                                value={formData.social_account} 
+                                onChange={val => setFormData({ ...formData, social_account: val })}
+                                options={[
+                                    { value: 'KLM', label: 'KL Main (KLM)' },
+                                    { value: 'KLS', label: 'KL Select (KLS)' },
+                                    { value: 'KLC', label: 'KL Community (KLC)' }
+                                ]}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Post Type</label>
+                            <CustomSelect 
+                                className={sidebarInputClass} 
+                                value={formData.post_type} 
+                                onChange={val => setFormData({ ...formData, post_type: val })}
+                                options={[
+                                    { value: 'reel', label: 'Reel' },
+                                    { value: 'story', label: 'Story' },
+                                    { value: 'carousel', label: 'Carousel' }
+                                ]}
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Target Platforms</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {['Instagram', 'LinkedIn', 'YouTube'].map(p => (
+                                    <div
+                                        key={p}
+                                        className={`py-2 rounded-lg border-[1.5px] text-xs font-bold text-center cursor-pointer transition-all duration-200 ${formData.platforms.includes(p) ? 'bg-brand text-white border-brand shadow-[0_2px_8px_rgba(0,43,114,0.2)]' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300'}`}
+                                        onClick={() => togglePlatform(p)}
+                                    >{p}</div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Scheduled Date</label>
+                            <input type="date" className={sidebarInputClass} value={formData.scheduled_date} onChange={e => setFormData({ ...formData, scheduled_date: e.target.value })} />
+                        </div>
+                    </div>
+
+                    <div className="w-full h-px bg-slate-100"></div>
+
+                    <div className="flex flex-col gap-6 relative">
+                        <h3 className="text-sm font-black text-slate-900 m-0 uppercase tracking-wide">Internal Notes</h3>
+                        <div className="relative w-full rounded-xl border-[1.5px] border-slate-200 bg-slate-50 transition-all duration-200 focus-within:border-brand focus-within:bg-slate-100 group">
+                            {/* Backdrop for syntax highlighting */}
+                            <div 
+                                ref={backdropRef}
+                                className="w-full h-[150px] py-3 px-3 text-sm font-semibold text-slate-900 whitespace-pre-wrap break-words overflow-hidden pointer-events-none"
+                            >
+                                {formData.notes ? renderHighlightedNotes() : <span className="text-slate-400">Reviewer notes, instructions, etc... (Type @ to mention)</span>}
+                            </div>
+
+                            {/* Actual Textarea */}
+                            <textarea 
+                                ref={notesRef}
+                                className="absolute inset-0 w-full h-[150px] py-3 px-3 text-sm font-semibold resize-none bg-transparent text-transparent caret-slate-900 outline-none border-none focus:ring-0 placeholder-transparent" 
+                                style={{ color: 'transparent', backgroundColor: 'transparent' }}
+                                spellCheck={false}
+                                value={formData.notes} 
+                                readOnly={!canEdit} 
+                                onChange={handleNotesChange} 
+                                onScroll={handleScroll}
+                                onBlur={() => setTimeout(() => setMentionQuery(null), 200)}
+                            />
+
+                            {mentionQuery !== null && filteredMembers.length > 0 && (
+                                <div className="absolute left-0 right-0 bottom-full mb-2 bg-white rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] border border-slate-200 overflow-hidden z-[100] max-h-[200px] overflow-y-auto">
+                                    {filteredMembers.map(m => (
+                                        <div 
+                                            key={m.id} 
+                                            className="px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                handleSelectMention(m);
+                                            }}
+                                        >
+                                            {m.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="mt-auto p-5 bg-blue-50 rounded-2xl border border-blue-100 flex flex-col gap-2">
+                        <div className="flex gap-2 text-blue-600 items-center">
+                            <Info size={16} />
+                            <span className="text-xs font-extrabold">PRO TIP</span>
+                        </div>
+                        <p className="m-0 text-[13px] text-slate-600 leading-[1.5]">Drafts stay private until submitted for review.</p>
+                    </div>
+                </aside>
             </div>
 
             {notification && (

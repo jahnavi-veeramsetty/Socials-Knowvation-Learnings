@@ -160,12 +160,14 @@ const Posts = () => {
         return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
-    const selectClass = "bg-light-card py-3 px-4 rounded-2xl border border-slate-200 text-[13px] font-bold text-slate-300 outline-none cursor-pointer";
+    const selectClass = "bg-light-card py-3 px-4 rounded-2xl border border-slate-200 text-[13px] font-bold text-slate-700 outline-none cursor-pointer";
 
     return (
         <div className="p-10 font-sans bg-light-bg min-h-screen text-slate-900">
             {/* Controls */}
-            <div className="flex justify-between items-center gap-4 mb-8 flex-wrap">
+            <div className="flex flex-col gap-4 mb-8">
+                {/* Row 1 */}
+                <div className="flex justify-between items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-3 bg-light-card py-3 px-5 rounded-2xl border border-slate-200 flex-1 min-w-[300px]">
                     <Search size={18} color="#94a3b8" />
                     <input
@@ -235,8 +237,11 @@ const Posts = () => {
                     </div>
                 ) : null}
 
-                <div className="flex gap-3 flex-wrap">
-                    <div className="w-[160px]">
+                </div>
+
+                {/* Row 2 */}
+                <div className="flex gap-3 flex-wrap w-full">
+                    <div className="flex-1 min-w-[140px]">
                         <CustomSelect
                             className={selectClass}
                             value={socialFilter}
@@ -250,7 +255,7 @@ const Posts = () => {
                         />
                     </div>
 
-                    <div className="w-[160px]">
+                    <div className="flex-1 min-w-[140px]">
                         <CustomSelect
                             className={selectClass}
                             value={platformFilter}
@@ -264,7 +269,7 @@ const Posts = () => {
                         />
                     </div>
 
-                    <div className="w-[160px]">
+                    <div className="flex-1 min-w-[140px]">
                         <CustomSelect
                             className={selectClass}
                             value={statusFilter}
@@ -278,7 +283,7 @@ const Posts = () => {
                         />
                     </div>
 
-                    <div className="w-[160px]">
+                    <div className="flex-1 min-w-[140px]">
                         <CustomSelect
                             className={selectClass}
                             value={postTypeFilter}
@@ -292,7 +297,7 @@ const Posts = () => {
                         />
                     </div>
 
-                    <div className="w-[220px]">
+                    <div className="flex-1 min-w-[180px]">
                         <CustomSelect
                             className={selectClass}
                             value={sortOrder}
@@ -305,12 +310,11 @@ const Posts = () => {
                     </div>
 
                     <button
-                        className="bg-[#059669] hover:bg-[#047857] text-white text-[13px] font-extrabold py-3 px-5 rounded-2xl cursor-pointer transition-all duration-200 border-none shadow-[0_4px_12px_rgba(5,150,105,0.3)] hover:-translate-y-0.5"
+                        className="bg-[#059669] hover:bg-[#047857] text-white text-[13px] font-extrabold py-3 px-5 rounded-2xl cursor-pointer transition-all duration-200 border-none shadow-[0_4px_12px_rgba(5,150,105,0.3)] hover:-translate-y-0.5 whitespace-nowrap shrink-0"
                         onClick={() => navigate(`/org/${orgId}/done-posting`)}
                     >
                         Published
                     </button>
-
                 </div>
             </div>
 

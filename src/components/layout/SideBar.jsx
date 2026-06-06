@@ -51,17 +51,15 @@ const SideBar = () => {
     ];
 
     const navLinkClass = ({ isActive }) =>
-        `flex items-center gap-3 py-2.5 px-3.5 rounded-xl no-underline font-semibold text-sm transition-all duration-200 border-none cursor-pointer text-left whitespace-nowrap w-full ${
-            isActive
-                ? 'bg-brand text-white shadow-[0_4px_15px_rgba(0,0,0,0.3)]'
-                : 'bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+        `flex items-center gap-3 py-2.5 px-3.5 rounded-xl no-underline font-semibold text-sm transition-all duration-200 border-none cursor-pointer text-left whitespace-nowrap w-full ${isActive
+            ? 'bg-brand text-white shadow-[0_4px_15px_rgba(0,0,0,0.3)]'
+            : 'bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-900'
         }`;
 
     return (
         <aside
-            className={`bg-light-sidebar border-r border-slate-200 flex flex-col py-6 font-sans h-screen sticky top-0 transition-all duration-300 z-[1000] ${
-                isCollapsed ? 'w-20 px-2.5' : 'w-[250px] px-3'
-            }`}
+            className={`bg-light-sidebar border-r border-slate-200 flex flex-col py-6 font-sans h-screen sticky top-0 transition-all duration-300 z-[1000] ${isCollapsed ? 'w-20 px-2.5' : 'w-[250px] px-3'
+                }`}
         >
             {/* Logo Row */}
             <div className={`flex items-center min-h-[66px] mb-8 shrink-0 transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-between px-2.5'}`}>
@@ -101,9 +99,8 @@ const SideBar = () => {
                     {/* Socials Dropdown */}
                     <li className="w-full relative group">
                         <button
-                            className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl font-semibold text-sm transition-all duration-200 border-none cursor-pointer text-left whitespace-nowrap w-full ${
-                                socialsOpen ? 'bg-brand text-white shadow-[0_4px_15px_rgba(0,0,0,0.3)]' : 'bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-                            }`}
+                            className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl font-semibold text-sm transition-all duration-200 border-none cursor-pointer text-left whitespace-nowrap w-full ${socialsOpen ? 'bg-brand text-white shadow-[0_4px_15px_rgba(0,0,0,0.3)]' : 'bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+                                }`}
                             onClick={() => setSocialsOpen(!socialsOpen)}
                         >
                             <div className="flex items-center gap-3">
@@ -131,8 +128,7 @@ const SideBar = () => {
                                         key={item.name}
                                         to={item.path}
                                         className={({ isActive }) =>
-                                            `flex items-center gap-2.5 py-2.5 px-3.5 rounded-xl text-[13px] font-semibold no-underline transition-all duration-200 ${
-                                                isActive ? 'text-slate-900 bg-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                            `flex items-center gap-2.5 py-2.5 px-3.5 rounded-xl text-[13px] font-semibold no-underline transition-all duration-200 ${isActive ? 'text-slate-900 bg-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                                             }`
                                         }
                                     >

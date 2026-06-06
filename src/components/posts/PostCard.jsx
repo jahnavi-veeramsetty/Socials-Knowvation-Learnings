@@ -4,12 +4,7 @@ import { Calendar, MessageSquare, ExternalLink, ShieldCheck, Clock, FileText, Ch
 const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
     const isCreator = post.created_by === currentUserId;
 
-    const defaultColors = {
-        KLM: '#002B72',
-        KLS: '#4f46e5',
-        KLC: '#0ea5e9'
-    };
-    const cardColor = (brandColors && brandColors[post.social_account]) || defaultColors[post.social_account] || '#e2e8f0';
+    // Card colors removed as requested
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -23,7 +18,7 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, i
     const getStatusStyle = (status) => {
         switch (status) {
             case 'published': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: <CheckCircle size={14} /> };
-            case 'approved': return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', icon: <ShieldCheck size={14} /> };
+            case 'approved': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: <ShieldCheck size={14} /> };
             case 'pending review': return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', icon: <Clock size={14} /> };
             case 'draft': return { bg: 'rgba(255, 255, 255, 0.05)', color: '#94a3b8', icon: <FileText size={14} /> };
             default: return { bg: 'rgba(255, 255, 255, 0.05)', color: '#94a3b8' };
@@ -58,35 +53,9 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, i
         }
     };
 
-    const getBrightness = (hex) => {
-        if (!hex) return 255;
-        let c = hex.replace('#', '');
-        if (c.length === 3) c = c.split('').map(char => char + char).join('');
-        if (c.length > 6) c = c.substring(0, 6);
-        const r = parseInt(c.substring(0, 2), 16);
-        const g = parseInt(c.substring(2, 4), 16);
-        const b = parseInt(c.substring(4, 6), 16);
-        return (r * 299 + g * 587 + b * 114) / 1000;
-    };
-
-    const isLight = getBrightness(cardColor) > 140;
-    const textColor = isLight ? '#0f172a' : '#ffffff';
-    const textMutedColor = isLight ? '#64748b' : 'rgba(255,255,255,0.75)';
-    const textMutedLightColor = isLight ? '#94a3b8' : 'rgba(255,255,255,0.5)';
-    const tagBg = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.15)';
-    const tagTextColor = isLight ? '#475569' : '#ffffff';
-    const borderCol = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)';
-
     return (
         <div
-            className="rounded-[20px] p-6 transition-all duration-300 ease-in-out flex flex-col gap-4 cursor-pointer relative hover:-translate-y-1"
-            style={{ 
-                background: `linear-gradient(135deg, ${cardColor}e6 0%, ${cardColor}b3 100%)`,
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: `1px solid ${borderCol}`,
-                boxShadow: `0 10px 30px -10px ${cardColor}80, inset 0 0 0 1px rgba(255, 255, 255, 0.2)`
-            }}
+            className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm transition-all duration-300 ease-in-out flex flex-col gap-4 cursor-pointer relative hover:-translate-y-1 hover:shadow-md hover:border-brand/30"
             onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
         >
             {/* Top */}
@@ -105,12 +74,18 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, i
                             />
                         </div>
                     )}
-                    <span className="text-[11px] font-extrabold py-1 px-2 rounded-[6px] uppercase" style={{ background: isLight ? `${cardColor}30` : 'rgba(255,255,255,0.2)', color: textColor }}>{post.social_account}</span>
-                    {post.post_type && <span className="text-[11px] font-extrabold py-1 px-2 rounded-[6px] uppercase" style={{ background: tagBg, color: tagTextColor }}>{post.post_type}</span>}
+                    <span className="bg-slate-100 text-slate-700 text-[11px] font-extrabold py-1 px-2.5 rounded-lg uppercase tracking-wide">
+                        {post.social_account}
+                    </span>
+                    {post.post_type && (
+                        <span className="bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-extrabold py-1 px-2.5 rounded-lg uppercase tracking-wide">
+                            {post.post_type}
+                        </span>
+                    )}
                 </div>
                 <div
-                    className="flex items-center gap-1.5 text-[10px] font-bold py-1 px-2.5 rounded-full uppercase"
-                    style={{ background: isLight ? statusStyle.bg : 'rgba(255,255,255,0.15)', color: isLight ? (statusStyle.icon ? statusStyle.color : '#64748b') : '#ffffff' }}
+                    className="flex items-center gap-1.5 text-[10.5px] font-bold py-1 px-3 rounded-full uppercase tracking-wide"
+                    style={{ background: statusStyle.bg, color: statusStyle.color }}
                 >
                     {statusStyle.icon}
                     {post.status}
@@ -119,19 +94,23 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, i
 
             {/* Body */}
             <div>
-                <h3 className="text-base font-extrabold m-0 leading-[1.4]" style={{ color: textColor }}>{post.title}</h3>
-                <p className="text-[13px] mt-1 mb-0 overflow-hidden leading-[1.5]" style={{ color: textMutedColor, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{post.caption}</p>
-                <div className="text-[11px] font-semibold mt-2" style={{ color: textMutedLightColor }}>
+                <h3 className="text-base font-extrabold m-0 leading-[1.4] text-slate-900">{post.title}</h3>
+                <p className="text-[13px] mt-1.5 mb-0 overflow-hidden leading-[1.6] text-slate-600" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    {post.caption}
+                </p>
+                <div className="text-[11.5px] font-semibold mt-3 text-slate-400">
                     Created by {post.profiles?.full_name || post.profiles?.email || 'Unknown'}
                 </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-auto pt-4 flex justify-between items-center" style={{ borderTop: `1px solid ${borderCol}` }}>
-                <div className="flex items-center gap-3" style={{ color: textMutedColor }}>
-                    <div className="flex gap-1.5">{post.platforms.map((p, i) => <PlatformIcon key={i} platform={p} />)}</div>
-                    <div className="flex items-center gap-1 text-xs font-semibold">
-                        <Calendar size={12} />{formatDate(post.scheduled_date)}
+            <div className="mt-auto pt-4 flex flex-wrap justify-between items-center gap-3 border-t border-slate-100">
+                <div className="flex items-center gap-3 text-slate-500">
+                    <div className="flex gap-1.5 text-slate-400">
+                        {post.platforms.map((p, i) => <PlatformIcon key={i} platform={p} />)}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold">
+                        <Calendar size={13} />{formatDate(post.scheduled_date)}
                     </div>
                 </div>
 
@@ -139,16 +118,16 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, i
                     {post.status === 'pending review' && (userRole === 'owner' || userRole === 'admin') && (
                         <div className="flex gap-2">
                             <button
-                                className="py-1.5 px-3 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none bg-brand text-white hover:bg-brand-hover"
+                                className="py-1.5 px-3.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none bg-brand text-white hover:bg-brand-hover shadow-sm hover:shadow"
                                 onClick={e => { e.stopPropagation(); onApprove(post.id); }}
                             >Approve</button>
                             <button
-                                className="py-1.5 px-3 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white"
+                                className="py-1.5 px-3.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500"
                                 onClick={e => { e.stopPropagation(); onReject(post.id); }}
                             >Reject</button>
                         </div>
                     )}
-                    <button className="py-1.5 px-3 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none" style={{ background: tagBg, color: tagTextColor }}>
+                    <button className="py-1.5 px-4 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900">
                         {isCreator ? 'Edit' : 'View'}
                     </button>
                 </div>

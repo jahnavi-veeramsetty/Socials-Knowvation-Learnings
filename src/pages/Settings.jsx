@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useBlocker } from 'react-router-dom';
-import { Settings as SettingsIcon, Save, AlertCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Save, AlertCircle, User, Building, Palette, Grid } from 'lucide-react';
 import { supabase } from '../supabase/supabase';
 import GeneralSettings from '../components/settings/GeneralSettings';
 import ProfileSettings from '../components/settings/ProfileSettings';
@@ -23,6 +23,7 @@ const Settings = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
+    const [activeTab, setActiveTab] = useState('profile');
 
     const canEditOrg = userRole === 'admin' || userRole === 'owner';
 
@@ -109,7 +110,7 @@ const Settings = () => {
     }
 
     return (
-        <div className="p-8 font-sans max-w-[720px] mx-auto bg-light-bg min-h-screen text-slate-900">
+        <div className="p-8 font-sans max-w-[1000px] mx-auto bg-light-bg min-h-screen text-slate-900 flex flex-col">
             {/* Confirmation Modal */}
             {blocker.state === "blocked" && (
                 <ConfirmModal
@@ -146,44 +147,82 @@ const Settings = () => {
                 </div>
             </div>
 
-            {/* Content Stack */}
-            <div className="flex flex-col gap-8">
-                <div className="pb-8 border-b border-slate-200">
-                    <ProfileSettings email={email} fullName={fullName} setFullName={setFullName} />
-                </div>
+            {/* Content Layout */}
+            <div className="grid grid-cols-[240px_1fr] gap-10 flex-1 items-start">
+                {/* Sidebar Navigation */}
+                <aside className="flex flex-col gap-2">
+                    <button
+                        className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'profile' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('profile')}
+                    >
+                        <User size={18} /> My Profile
+                    </button>
 
-                <div className="pb-8 border-b border-slate-200">
-                    <GeneralSettings orgName={orgName} setOrgName={setOrgName} readOnly={!canEditOrg} />
-                </div>
+                    <button
+                        className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'organization' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('organization')}
+                    >
+                        <Building size={18} /> Organization
+                    </button>
 
-                <div className={allOrgs.length > 1 ? "pb-8 border-b border-slate-200" : ""}>
-                    <BrandSettings brandColors={brandColors} setBrandColors={setBrandColors} readOnly={userRole !== 'owner'} />
-                </div>
+                    <button
+                        className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'brand' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('brand')}
+                    >
+                        <Palette size={18} /> Brand Colors
+                    </button>
 
-                {allOrgs.length > 1 && (
-                    <div>
-                        <h3 className="text-base font-extrabold text-slate-900 m-0 mb-1">Switch Organization</h3>
-                        <p className="text-[13px] text-slate-500 m-0 mb-4 font-medium">Jump to another organization workspace</p>
-                        <div className="flex flex-col gap-3">
-                            {allOrgs.map(org => (
-                                <button
-                                    key={org.id}
-                                    className={`flex justify-between items-center py-4 px-5 bg-light-card border rounded-2xl cursor-pointer transition-all duration-200 w-full text-left ${org.id === orgId ? 'bg-slate-50 border-slate-200 cursor-default' : 'border-slate-200 hover:border-brand hover:bg-slate-50 hover:translate-x-1'}`}
-                                    onClick={() => org.id !== orgId && navigate(`/org/${org.id}/dashboard`)}
-                                    disabled={org.id === orgId}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-[15px] font-bold text-slate-900">{org.name}</span>
-                                        {org.id === orgId && (
-                                            <span className="text-[10px] font-extrabold uppercase bg-slate-100 text-slate-500 py-1 px-2 rounded-md">Current</span>
-                                        )}
-                                    </div>
-                                    <div className="text-slate-600 text-lg font-bold">→</div>
-                                </button>
-                            ))}
+                    {allOrgs.length > 1 && (
+                        <button
+                            className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'workspaces' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                            onClick={() => setActiveTab('workspaces')}
+                        >
+                            <Grid size={18} /> Switch Workspace
+                        </button>
+                    )}
+                </aside>
+
+                {/* Tab Content */}
+                <main className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8 min-h-[400px]">
+                    {activeTab === 'profile' && (
+                        <ProfileSettings email={email} fullName={fullName} setFullName={setFullName} />
+                    )}
+
+                    {activeTab === 'organization' && (
+                        <GeneralSettings orgName={orgName} setOrgName={setOrgName} readOnly={!canEditOrg} />
+                    )}
+
+                    {activeTab === 'brand' && (
+                        <BrandSettings brandColors={brandColors} setBrandColors={setBrandColors} readOnly={userRole !== 'owner'} />
+                    )}
+
+                    {activeTab === 'workspaces' && allOrgs.length > 1 && (
+                        <div>
+                            <div className="mb-6">
+                                <h2 className="text-slate-900 text-xl font-extrabold m-0 mb-1">Switch Organization</h2>
+                                <p className="text-slate-500 text-sm m-0">Jump to another organization workspace.</p>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                {allOrgs.map(org => (
+                                    <button
+                                        key={org.id}
+                                        className={`flex justify-between items-center py-4 px-5 border rounded-2xl cursor-pointer transition-all duration-200 w-full text-left ${org.id === orgId ? 'bg-slate-50 border-slate-200 cursor-default' : 'bg-white border-slate-200 hover:border-brand hover:bg-slate-50 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]'}`}
+                                        onClick={() => org.id !== orgId && navigate(`/org/${org.id}/dashboard`)}
+                                        disabled={org.id === orgId}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[15px] font-bold text-slate-900">{org.name}</span>
+                                            {org.id === orgId && (
+                                                <span className="text-[10px] font-extrabold uppercase bg-slate-200 text-slate-600 py-1 px-2 rounded-md tracking-wide">Current</span>
+                                            )}
+                                        </div>
+                                        <div className="text-slate-400 text-lg font-bold">→</div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </main>
             </div>
 
             {notification && (
