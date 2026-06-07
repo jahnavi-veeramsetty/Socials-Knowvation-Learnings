@@ -1,18 +1,70 @@
-import React from 'react';
-import { X, CheckCircle, AlertCircle, Layout } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, CheckCircle, Bell, MessageSquare, Circle } from 'lucide-react';
+import { supabase } from '../../supabase/supabase';
+import { useNavigate } from 'react-router-dom';
 
-const NotificationsPanel = ({ isOpen, onClose, activities }) => {
-    // Re-using the same icon logic from Dashboard for consistency
-    const getActivityIcon = (type) => {
-        if (type === 'approve') return <CheckCircle size={18} />;
-        if (type === 'reject') return <AlertCircle size={18} />;
-        return <Layout size={18} />;
+const NotificationsPanel = ({ isOpen, onClose, orgId, userId, onNotificationRead }) => {
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isOpen && userId && orgId) {
+            fetchNotifications();
+        }
+    }, [isOpen, userId, orgId]);
+
+    const fetchNotifications = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('notifications')
+            .select(`
+                *,
+                post:post_id(title)
+            `)
+            .eq('organization_id', orgId)
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            // Fetch actor profiles manually
+            const actorIds = [...new Set(data.map(n => n.actor_id).filter(Boolean))];
+            if (actorIds.length > 0) {
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, email')
+                    .in('id', actorIds);
+                
+                if (profiles) {
+                    const profileMap = profiles.reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+                    const enrichedData = data.map(n => ({
+                        ...n,
+                        actor: profileMap[n.actor_id]
+                    }));
+                    setNotifications(enrichedData);
+                    setLoading(false);
+                    return;
+                }
+            }
+            setNotifications(data);
+        }
+        setLoading(false);
     };
 
-    const getActivityStyle = (type) => {
-        if (type === 'approve') return { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
-        if (type === 'reject') return { background: 'rgba(239, 68, 68, 0.1)', color: '#ff4d4f' };
-        return { background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' };
+    const markAsRead = async (id, e) => {
+        e.stopPropagation();
+        await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+        fetchNotifications();
+        if (onNotificationRead) onNotificationRead();
+    };
+
+    const handleNotificationClick = async (notif) => {
+        if (!notif.is_read) {
+            await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+            if (onNotificationRead) onNotificationRead();
+        }
+        onClose();
+        navigate(`/org/${orgId}/posts/create?id=${notif.post_id}`);
     };
 
     return (
@@ -40,43 +92,58 @@ const NotificationsPanel = ({ isOpen, onClose, activities }) => {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {activities && activities.length > 0 ? (
-                        <div className="flex flex-col gap-4">
-                            {activities.map((item, idx) => (
-                                <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-brand hover:shadow-sm transition-all duration-200">
-                                    <div className="flex-col items-center shrink-0">
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={getActivityStyle(item.action_type)}>
-                                            {getActivityIcon(item.action_type)}
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-extrabold text-slate-900 truncate">
-                                            {item.profiles?.full_name || item.profiles?.email || 'Unknown User'}
-                                        </div>
-                                        <div className="text-sm text-slate-600 mt-1 leading-snug">
-                                            {item.action_text}
-                                            {item.posts && (
-                                                <span className="inline-flex items-center py-0.5 px-2 bg-white rounded text-xs font-bold text-brand ml-1 border border-brand/20">
-                                                    {item.posts.title}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="text-xs text-slate-400 font-semibold mt-2">
-                                            {new Date(item.created_at).toLocaleString(undefined, {
-                                                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                            })}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                    {loading ? (
+                        <div className="h-full flex items-center justify-center">
+                            <span className="text-slate-500 font-semibold text-sm">Loading...</span>
+                        </div>
+                    ) : notifications.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 text-brand">
+                                <CheckCircle size={32} />
+                            </div>
+                            <h3 className="text-base font-bold text-slate-900 mb-1">You're all caught up!</h3>
+                            <p className="text-sm text-slate-500 m-0">You have no new notifications.</p>
                         </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center px-4">
-                            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 text-slate-300">
-                                <Layout size={32} />
-                            </div>
-                            <h3 className="text-base font-bold text-slate-900 mb-1">No Notifications Yet</h3>
-                            <p className="text-sm text-slate-500 m-0">When your team members take actions, they will appear here.</p>
+                        <div className="flex flex-col gap-4">
+                            {notifications.map(notif => (
+                                <div 
+                                    key={notif.id}
+                                    onClick={() => handleNotificationClick(notif)}
+                                    className={`relative p-4 rounded-xl border cursor-pointer transition-all ${
+                                        notif.is_read 
+                                        ? 'bg-white border-slate-100 hover:bg-slate-50' 
+                                        : 'bg-brand/5 border-brand/20 hover:bg-brand/10'
+                                    }`}
+                                >
+                                    <div className="flex gap-4 items-start">
+                                        <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center ${notif.is_read ? 'bg-slate-100 text-slate-500' : 'bg-brand text-white'}`}>
+                                            {notif.type === 'mention' ? <MessageSquare size={18} /> : <Bell size={18} />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm text-slate-900 m-0 leading-[1.5]">
+                                                <span className="font-extrabold">{notif.actor?.full_name || notif.actor?.email || 'Someone'}</span>{' '}
+                                                {notif.content}
+                                            </p>
+                                            <p className="text-xs text-slate-500 mt-2 font-semibold">
+                                                {new Date(notif.created_at).toLocaleString()}
+                                            </p>
+                                        </div>
+                                        {!notif.is_read && (
+                                            <button 
+                                                onClick={(e) => markAsRead(notif.id, e)}
+                                                className="p-1.5 shrink-0 rounded-full text-brand hover:bg-brand hover:text-white transition-colors border-none bg-brand/10 cursor-pointer"
+                                                title="Mark as read"
+                                            >
+                                                <CheckCircle size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {!notif.is_read && (
+                                        <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-brand"></div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

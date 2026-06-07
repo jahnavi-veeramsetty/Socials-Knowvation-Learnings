@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, MessageSquare, ExternalLink, ShieldCheck, Clock, FileText, CheckCircle } from 'lucide-react';
 
-const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
+const PostCard = ({ post, onApprove, onRedo, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
     const isCreator = post.created_by === currentUserId;
 
     // Card colors removed as requested
@@ -123,8 +123,8 @@ const PostCard = ({ post, onApprove, onReject, userRole, currentUserId, orgId, i
                             >Approve</button>
                             <button
                                 className="py-1.5 px-3.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:border-red-500"
-                                onClick={e => { e.stopPropagation(); onReject(post.id); }}
-                            >Reject</button>
+                                onClick={e => { e.stopPropagation(); onRedo(post.id); }}
+                            >Redo</button>
                         </div>
                     )}
                     <button className="py-1.5 px-4 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-200 border-none bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900">

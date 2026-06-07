@@ -43,6 +43,7 @@ const Calendar = () => {
     const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [deleteConfirmEventId, setDeleteConfirmEventId] = useState(null);
+    const [showDrafts, setShowDrafts] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -73,7 +74,7 @@ const Calendar = () => {
             .from('posts')
             .select('*, profiles:created_by(full_name, email)')
             .eq('organization_id', orgId)
-            .eq('status', 'approved');
+            .in('status', ['approved', 'draft']);
 
         if (!error) {
             setPosts(data || []);
@@ -160,6 +161,8 @@ const Calendar = () => {
         const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
         return posts.filter(p => {
+            if (p.status === 'draft' && !showDrafts) return false;
+
             const matchesDate = p.scheduled_date === dateStr;
             const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesSocial = socialFilter === 'all' || p.social_account === socialFilter;
@@ -219,7 +222,15 @@ const Calendar = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2.5">
+                    <div className="flex flex-wrap gap-2.5 items-center">
+                        <button
+                            onClick={() => setShowDrafts(!showDrafts)}
+                            className={`flex items-center gap-2 text-[12px] font-extrabold px-4 py-2 rounded-xl transition-all duration-200 border cursor-pointer ${showDrafts ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}
+                        >
+                            <div className={`w-2 h-2 rounded-full ${showDrafts ? 'bg-green-400' : 'bg-slate-300'}`}></div>
+                            Drafts: {showDrafts ? 'ON' : 'OFF'}
+                        </button>
+
                         {['KLM', 'KLS', 'KLC'].map(acc => {
                             const color = brandColors[acc] || '#002B72';
                             const label = acc === 'KLM' ? 'KL Main' : acc === 'KLS' ? 'KL Select' : 'KL Community';
@@ -293,7 +304,7 @@ const Calendar = () => {
                             ]}
                         />
                     </div>
-                    <button 
+                    <button
                         className="bg-brand hover:bg-brand-hover text-white flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[13px] border-none cursor-pointer transition-all shadow-[0_4px_12px_rgba(0,43,114,0.3)] hover:-translate-y-0.5 ml-auto"
                         onClick={() => {
                             setSelectedEvent(null);
@@ -317,7 +328,7 @@ const Calendar = () => {
                         return (
                             <div key={idx} className={`h-[150px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden p-3.5 border-r border-b border-slate-200 relative transition-all duration-200 bg-light-card last-of-type:border-r-0 hover:bg-slate-50 hover:z-10 ${!dateObj ? 'bg-black/5' : ''}`}
                                 style={{ borderRight: (idx + 1) % 7 === 0 ? 'none' : undefined }}>
-                                
+
                                 {/* Faded X for past days */}
                                 {pastDay && (
                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
@@ -334,35 +345,36 @@ const Calendar = () => {
                                             {getEventsForDate(dateObj).map(evt => {
                                                 const evtColor = evt.color || '#0ea5e9';
                                                 return (
-                                                <div 
-                                                    key={`evt-${evt.id}`}
-                                                    onClick={() => {
-                                                        setSelectedEvent(evt);
-                                                        setIsAddEventModalOpen(true);
-                                                    }}
-                                                    className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between gap-2 border cursor-pointer transition-all duration-[0.2s_cubic-bezier(0.175,0.885,0.32,1.275)] hover:-translate-y-0.5 hover:shadow-md"
-                                                    style={{
-                                                        backgroundColor: `${evtColor}15`,
-                                                        borderColor: `${evtColor}40`,
-                                                        color: evtColor
-                                                    }}
-                                                >
-                                                    <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-ellipsis">
-                                                        {evt.is_public ? <Globe size={12} className="shrink-0" /> : <Lock size={12} className="shrink-0" />}
-                                                        <span className="truncate">{evt.title}</span>
+                                                    <div
+                                                        key={`evt-${evt.id}`}
+                                                        onClick={() => {
+                                                            setSelectedEvent(evt);
+                                                            setIsAddEventModalOpen(true);
+                                                        }}
+                                                        className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between gap-2 border cursor-pointer transition-all duration-[0.2s_cubic-bezier(0.175,0.885,0.32,1.275)] hover:-translate-y-0.5 hover:shadow-md"
+                                                        style={{
+                                                            backgroundColor: `${evtColor}15`,
+                                                            borderColor: `${evtColor}40`,
+                                                            color: evtColor
+                                                        }}
+                                                    >
+                                                        <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-ellipsis">
+                                                            {evt.is_public ? <Globe size={12} className="shrink-0" /> : <Lock size={12} className="shrink-0" />}
+                                                            <span className="truncate">{evt.title}</span>
+                                                        </div>
+                                                        {evt.created_by === userId && (
+                                                            <button
+                                                                onClick={(e) => handleDeleteEvent(e, evt.id)}
+                                                                className="bg-transparent border-none p-0.5 rounded cursor-pointer transition-colors shrink-0 hover:bg-white/50"
+                                                                style={{ color: evtColor }}
+                                                                title="Delete Event"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                    {evt.created_by === userId && (
-                                                        <button 
-                                                            onClick={(e) => handleDeleteEvent(e, evt.id)}
-                                                            className="bg-transparent border-none p-0.5 rounded cursor-pointer transition-colors shrink-0 hover:bg-white/50"
-                                                            style={{ color: evtColor }}
-                                                            title="Delete Event"
-                                                        >
-                                                            <Trash2 size={12} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            )})}
+                                                )
+                                            })}
                                             {dayPosts.map(post => {
                                                 const color = brandColors[post.social_account] || '#002B72';
 
@@ -402,14 +414,14 @@ const Calendar = () => {
                 </div>
             </div>
 
-            <AddEventModal 
-                isOpen={isAddEventModalOpen} 
+            <AddEventModal
+                isOpen={isAddEventModalOpen}
                 onClose={() => {
                     setIsAddEventModalOpen(false);
                     setSelectedEvent(null);
-                }} 
-                orgId={orgId} 
-                userId={userId} 
+                }}
+                orgId={orgId}
+                userId={userId}
                 onEventAdded={fetchEvents}
                 editEvent={selectedEvent}
             />

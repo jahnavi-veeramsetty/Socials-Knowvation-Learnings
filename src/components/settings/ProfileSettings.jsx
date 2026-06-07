@@ -17,7 +17,6 @@ const ProfileSettings = ({ email, fullName, setFullName }) => {
                     className={inputClass}
                     value={email}
                     disabled
-                    style={{ background: 'rgba(255, 255, 255, 0.02)', color: '#64748b' }}
                 />
             </div>
 
@@ -31,7 +30,7 @@ const ProfileSettings = ({ email, fullName, setFullName }) => {
                 />
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-200">
+            <div className="mt-6 pt-6 border-t border-slate-200">
                 <h3 className="text-red-500 text-sm font-bold mb-3 m-0">Security</h3>
                 <button
                     className="w-full py-3 px-4 rounded-xl border-[1.5px] border-slate-200 text-sm font-semibold outline-none bg-slate-50 text-slate-900 text-left flex items-center gap-2.5 cursor-pointer hover:border-slate-300"

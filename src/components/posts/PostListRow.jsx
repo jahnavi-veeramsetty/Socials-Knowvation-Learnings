@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, ShieldCheck, Clock, FileText, CheckCircle, ChevronRight } from 'lucide-react';
 
-const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
+const PostListRow = ({ post, onApprove, onRedo, userRole, currentUserId, orgId, isSelected, onSelect, brandColors }) => {
     const defaultColors = {
         KLM: '#002B72',
         KLS: '#4f46e5',
@@ -102,8 +102,8 @@ const PostListRow = ({ post, onApprove, onReject, userRole, currentUserId, orgId
                         >Approve</button>
                         <button
                             className="py-1.5 px-3 bg-red-50 text-red-400 border border-[#ffccc7] rounded-lg text-[11px] font-bold cursor-pointer hover:bg-red-100"
-                            onClick={e => { e.stopPropagation(); onReject(post.id); }}
-                        >Reject</button>
+                            onClick={e => { e.stopPropagation(); onRedo(post.id); }}
+                        >Redo</button>
                     </>
                 ) : (
                     <ChevronRight size={18} />

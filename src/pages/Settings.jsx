@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useBlocker } from 'react-router-dom';
-import { Settings as SettingsIcon, Save, AlertCircle, User, Building, Palette, Grid } from 'lucide-react';
+import { Settings as SettingsIcon, Save, AlertCircle, User, Building, Palette, Grid, Activity } from 'lucide-react';
 import { supabase } from '../supabase/supabase';
 import GeneralSettings from '../components/settings/GeneralSettings';
 import ProfileSettings from '../components/settings/ProfileSettings';
 import BrandSettings from '../components/settings/BrandSettings';
+import TeamActivitySettings from '../components/settings/TeamActivitySettings';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
 
@@ -110,7 +111,8 @@ const Settings = () => {
     }
 
     return (
-        <div className="p-8 font-sans max-w-[1000px] mx-auto bg-light-bg min-h-screen text-slate-900 flex flex-col">
+        <div className="px-12 py-8 font-sans bg-light-bg min-h-screen text-slate-900 flex flex-col w-full">
+            <div className="max-w-[1000px]">
             {/* Confirmation Modal */}
             {blocker.state === "blocked" && (
                 <ConfirmModal
@@ -148,7 +150,7 @@ const Settings = () => {
             </div>
 
             {/* Content Layout */}
-            <div className="grid grid-cols-[240px_1fr] gap-10 flex-1 items-start">
+            <div className="grid grid-cols-[240px_1fr] gap-8 flex-1 items-start">
                 {/* Sidebar Navigation */}
                 <aside className="flex flex-col gap-2">
                     <button
@@ -172,6 +174,13 @@ const Settings = () => {
                         <Palette size={18} /> Brand Colors
                     </button>
 
+                    <button
+                        className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'activity' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('activity')}
+                    >
+                        <Activity size={18} /> Team Activity
+                    </button>
+
                     {allOrgs.length > 1 && (
                         <button
                             className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'workspaces' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
@@ -183,7 +192,7 @@ const Settings = () => {
                 </aside>
 
                 {/* Tab Content */}
-                <main className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8 min-h-[400px]">
+                <main className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-8 min-h-fit">
                     {activeTab === 'profile' && (
                         <ProfileSettings email={email} fullName={fullName} setFullName={setFullName} />
                     )}
@@ -194,6 +203,10 @@ const Settings = () => {
 
                     {activeTab === 'brand' && (
                         <BrandSettings brandColors={brandColors} setBrandColors={setBrandColors} readOnly={userRole !== 'owner'} />
+                    )}
+
+                    {activeTab === 'activity' && (
+                        <TeamActivitySettings orgId={orgId} />
                     )}
 
                     {activeTab === 'workspaces' && allOrgs.length > 1 && (
@@ -228,6 +241,7 @@ const Settings = () => {
             {notification && (
                 <Toast message={notification.message} type={notification.type} onClose={() => setNotification(null)} />
             )}
+            </div>
         </div>
     );
 };

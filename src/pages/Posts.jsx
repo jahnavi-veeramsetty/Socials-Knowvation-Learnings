@@ -92,11 +92,11 @@ const Posts = () => {
         fetchPosts();
     };
 
-    const handleReject = async (postId) => {
+    const handleRedo = async (postId) => {
         const post = posts.find(p => p.id === postId);
         const { error } = await supabase.from('posts').update({ status: 'draft' }).eq('id', postId);
         if (error) { console.error(error); return; }
-        await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, post_id: postId, action_type: 'reject', action_text: `rejected "${post?.title || 'Untitled'}"` }]);
+        await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, post_id: postId, action_type: 'redo', action_text: `sent for redo "${post?.title || 'Untitled'}"` }]);
         fetchPosts();
     };
 
@@ -120,15 +120,27 @@ const Posts = () => {
                 const imagePaths = oldImages.map(img => img.image_path);
                 await supabase.storage.from('post-images').remove(imagePaths);
             }
-            const { error } = await supabase.from('posts').delete().in('id', selectedPosts);
-            if (error) throw error;
+
+            // Delete dependent records first and check for errors
+            const { error: notifErr } = await supabase.from('notifications').delete().in('post_id', selectedPosts);
+            if (notifErr) throw new Error(`Notifications delete error: ${notifErr.message}`);
+
+            const { error: imgErr } = await supabase.from('post_images').delete().in('post_id', selectedPosts);
+            if (imgErr) throw new Error(`Images delete error: ${imgErr.message}`);
+
+            const { error: logErr } = await supabase.from('activity_log').delete().in('post_id', selectedPosts);
+            if (logErr) throw new Error(`Activity log delete error: ${logErr.message}`);
+
+            const { error: postErr } = await supabase.from('posts').delete().in('id', selectedPosts);
+            if (postErr) throw new Error(`Post delete error: ${postErr.message}`);
 
             await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'delete', action_text: `bulk deleted ${selectedPosts.length} posts` }]);
             setSelectedPosts([]);
             setIsDeleteModalOpen(false);
             fetchPosts();
         } catch (err) {
-            console.error(err);
+            console.error("Bulk Delete Error:", err);
+            // Optionally, we could show this to the user via a toast notification if we had one here
         } finally {
             setIsDeleting(false);
         }
@@ -325,9 +337,9 @@ const Posts = () => {
                 <div className={viewMode === 'grid' ? 'grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6' : 'flex flex-col gap-3'}>
                     {filteredPosts.map(post =>
                         viewMode === 'grid' ? (
-                            <PostCard key={post.id} post={post} userRole={userRole} currentUserId={userId} orgId={orgId} onApprove={handleApprove} onReject={handleReject} isSelected={selectedPosts.includes(post.id)} onSelect={() => toggleSelectPost(post.id)} brandColors={brandColors} />
+                            <PostCard key={post.id} post={post} userRole={userRole} currentUserId={userId} orgId={orgId} onApprove={handleApprove} onRedo={handleRedo} isSelected={selectedPosts.includes(post.id)} onSelect={() => toggleSelectPost(post.id)} brandColors={brandColors} />
                         ) : (
-                            <PostListRow key={post.id} post={post} userRole={userRole} currentUserId={userId} orgId={orgId} onApprove={handleApprove} onReject={handleReject} isSelected={selectedPosts.includes(post.id)} onSelect={() => toggleSelectPost(post.id)} brandColors={brandColors} />
+                            <PostListRow key={post.id} post={post} userRole={userRole} currentUserId={userId} orgId={orgId} onApprove={handleApprove} onRedo={handleRedo} isSelected={selectedPosts.includes(post.id)} onSelect={() => toggleSelectPost(post.id)} brandColors={brandColors} />
                         )
                     )}
                 </div>

@@ -8,16 +8,17 @@ import { useState, useEffect } from 'react';
 import StatCards from '../components/dashboard/StatCards';
 import WeeklySchedule from '../components/dashboard/WeeklySchedule';
 import AccountOverview from '../components/dashboard/AccountOverview';
-import ActivityFeed from '../components/dashboard/ActivityFeed';
 import NotificationsPanel from '../components/dashboard/NotificationsPanel';
 
 const Dashboard = () => {
     const { orgId } = useParams();
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
-    const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [greeting, setGreeting] = useState('Dashboard');
     const [brandColors, setBrandColors] = useState({
         KLM: '#002B72',
         KLS: '#4f46e5',
@@ -27,10 +28,75 @@ const Dashboard = () => {
     const today = new Date();
 
     useEffect(() => {
-        fetchPosts();
-        fetchBrandSettings();
-        fetchActivities();
+        const initUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setUserId(user.id);
+        };
+        initUser();
+    }, []);
+
+    useEffect(() => {
+        if (orgId) {
+            fetchPosts();
+            fetchBrandSettings();
+        }
     }, [orgId]);
+
+    useEffect(() => {
+        if (userId && orgId) {
+            fetchUnreadCount();
+            fetchTeamAndGenerateGreeting();
+        }
+    }, [userId, orgId]);
+
+    const fetchTeamAndGenerateGreeting = async () => {
+        const { data: members, error } = await supabase
+            .from('organization_members')
+            .select('role, user_id')
+            .eq('organization_id', orgId);
+
+        if (!error && members) {
+            const currentUserMember = members.find(m => m.user_id === userId);
+            const role = currentUserMember?.role || 'member';
+            
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, full_name, email')
+                .in('id', members.map(m => m.user_id));
+
+            let currentUserName = 'User';
+            const teamList = [];
+
+            if (profiles) {
+                const myProfile = profiles.find(p => p.id === userId);
+                if (myProfile) {
+                    currentUserName = myProfile.full_name || myProfile.email || 'User';
+                }
+
+                profiles.forEach(p => {
+                    teamList.push({
+                        id: p.id,
+                        name: p.full_name?.split(' ')[0] || p.email?.split('@')[0],
+                        role: members.find(m => m.user_id === p.id)?.role
+                    });
+                });
+            }
+
+            import('../greetings/generator.js').then(({ getGreeting }) => {
+                setGreeting(getGreeting(role, currentUserName.split(' ')[0], teamList));
+            }).catch(console.error);
+        }
+    };
+
+    const fetchUnreadCount = async () => {
+        const { count, error } = await supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('organization_id', orgId)
+            .eq('user_id', userId)
+            .eq('is_read', false);
+        if (!error) setUnreadCount(count || 0);
+    };
 
     const fetchBrandSettings = async () => {
         const { data } = await supabase
@@ -55,23 +121,6 @@ const Dashboard = () => {
             setPosts(data || []);
         }
         setLoading(false);
-    };
-
-    const fetchActivities = async () => {
-        const { data, error } = await supabase
-            .from('activity_log')
-            .select(`
-                *,
-                profiles:user_id (full_name, email),
-                posts:post_id (title)
-            `)
-            .eq('organization_id', orgId)
-            .order('created_at', { ascending: false })
-            .limit(6);
-
-        if (!error) {
-            setActivities(data || []);
-        }
     };
 
     // Week Range Calculation
@@ -115,19 +164,6 @@ const Dashboard = () => {
 
     const pendingReview = posts.filter(p => p.status === 'pending review').length;
 
-    // Activity Helpers
-    const getActivityIcon = (type) => {
-        if (type === 'approve') return <CheckCircle size={18} />;
-        if (type === 'reject') return <AlertCircle size={18} />;
-        return <Layout size={18} />;
-    };
-
-    const getActivityStyle = (type) => {
-        if (type === 'approve') return { background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
-        if (type === 'reject') return { background: 'rgba(239, 68, 68, 0.1)', color: '#ff4d4f' };
-        return { background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' };
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen text-brand font-extrabold">
@@ -139,13 +175,17 @@ const Dashboard = () => {
     return (
         <div className="px-12 py-8 bg-light-bg min-h-screen">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-slate-900 text-[32px] font-black m-0 tracking-[-1px]">Dashboard</h1>
+                <h1 className="text-slate-900 text-[28px] md:text-[32px] font-black m-0 tracking-[-1px] leading-tight max-w-[80%]">{greeting}</h1>
                 <button
                     className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all duration-200 cursor-pointer relative hover:shadow-md hover:-translate-y-0.5"
                     onClick={() => setIsNotificationsOpen(true)}
                 >
                     <Bell size={18} strokeWidth={2.5} />
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                    )}
                 </button>
             </div>
 
@@ -171,16 +211,12 @@ const Dashboard = () => {
                 orgId={orgId}
             />
 
-            <ActivityFeed
-                activities={activities}
-                getActivityIcon={getActivityIcon}
-                getActivityStyle={getActivityStyle}
-            />
-
             <NotificationsPanel
                 isOpen={isNotificationsOpen}
                 onClose={() => setIsNotificationsOpen(false)}
-                activities={activities}
+                orgId={orgId}
+                userId={userId}
+                onNotificationRead={fetchUnreadCount}
             />
         </div>
     );

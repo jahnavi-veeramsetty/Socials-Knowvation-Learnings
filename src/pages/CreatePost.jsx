@@ -110,6 +110,7 @@ const CreatePost = () => {
                     hashtags: data.hashtags || '',
                     reference_link: data.reference_link || '',
                     notes: data.notes || '',
+                    created_by: data.created_by,
                     uploadedImages: [],
                     images: [],
                 }));
@@ -206,13 +207,17 @@ const CreatePost = () => {
             if (!currentUserId) { setNotification({ message: 'User not logged in', type: 'error' }); return; }
 
             const postData = {
-                organization_id: orgId, created_by: currentUserId,
+                organization_id: orgId,
                 social_account: formData.social_account, post_type: formData.post_type,
                 platforms: formData.platforms, scheduled_date: formData.scheduled_date || null,
                 title: formData.title, caption: formData.caption, script: formData.script,
                 hashtags: formData.hashtags, reference_link: formData.reference_link,
                 notes: formData.notes, status,
             };
+
+            if (!postId) {
+                postData.created_by = currentUserId;
+            }
 
             let savedPostId = postId;
 
@@ -247,8 +252,36 @@ const CreatePost = () => {
             let actionType = null, actionText = null;
             if (status === 'pending review' && postStatus !== 'pending review') { actionType = 'submit'; actionText = `submitted "${formData.title || 'Untitled'}"`; }
             else if (status === 'approved' && postStatus === 'pending review') { actionType = 'approve'; actionText = `approved "${formData.title || 'Untitled'}"`; }
-            else if (status === 'draft' && postStatus === 'pending review') { actionType = 'reject'; actionText = `rejected "${formData.title || 'Untitled'}"`; }
+            else if (status === 'draft' && postStatus === 'pending review') { actionType = 'redo'; actionText = `sent for redo "${formData.title || 'Untitled'}"`; }
             if (actionType) await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: currentUserId, post_id: savedPostId, action_type: actionType, action_text: actionText }]);
+
+            if (formData.notes) {
+                const mentionRegex = /@(\S+)/g;
+                const mentions = [...formData.notes.matchAll(mentionRegex)].map(m => m[1]);
+                if (mentions.length > 0) {
+                    const taggedMembers = orgMembers.filter(m => mentions.includes(m.name));
+                    for (const member of taggedMembers) {
+                        if (member.id !== currentUserId) {
+                            const { data: existing } = await supabase.from('notifications')
+                                .select('id')
+                                .eq('post_id', savedPostId)
+                                .eq('user_id', member.id)
+                                .eq('type', 'mention')
+                                .single();
+                            if (!existing) {
+                                await supabase.from('notifications').insert([{
+                                    organization_id: orgId,
+                                    user_id: member.id,
+                                    actor_id: currentUserId,
+                                    post_id: savedPostId,
+                                    type: 'mention',
+                                    content: `mentioned you in "${formData.title || 'Untitled'}"`
+                                }]);
+                            }
+                        }
+                    }
+                }
+            }
 
             const channel = new BroadcastChannel('posts_channel');
             channel.postMessage('refresh_posts');
@@ -274,13 +307,28 @@ const CreatePost = () => {
                 const { data: oldImages } = await supabase.from('post_images').select('*').eq('post_id', postId);
                 if (oldImages?.length > 0) for (const img of oldImages) await supabase.storage.from('post-images').remove([img.image_path]);
             }
+            
+            // Delete dependent records to avoid foreign key constraints
+            await supabase.from('notifications').delete().eq('post_id', postId);
+            await supabase.from('post_images').delete().eq('post_id', postId);
+            await supabase.from('activity_log').delete().eq('post_id', postId);
+
             const { error } = await supabase.from('posts').delete().eq('id', postId);
             if (error) throw error;
-            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: currentUserId, post_id: postId, action_type: 'delete', action_text: `deleted "${formData.title || 'Untitled'}"` }]);
+            
+            // Insert log with post_id as null because the post no longer exists
+            await supabase.from('activity_log').insert([{ 
+                organization_id: orgId, 
+                user_id: currentUserId, 
+                post_id: null, 
+                action_type: 'delete', 
+                action_text: `deleted "${formData.title || 'Untitled'}"` 
+            }]);
+            
             navigate(`/org/${orgId}/posts`);
         } catch (err) {
             console.error(err);
-            setNotification({ message: 'Error deleting post', type: 'error' });
+            setNotification({ message: err.message || 'Error deleting post', type: 'error' });
             setIsDeleting(false);
             setIsDeleteModalOpen(false);
         }
@@ -317,16 +365,18 @@ const CreatePost = () => {
                         {postStatus === 'pending review' && (userRole === 'admin' || userRole === 'owner') ? (
                             <>
                                 <button className="py-2.5 px-5 rounded-xl font-bold text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 bg-red-500/10 text-red-400 border border-red-500/20" onClick={() => handleSave('draft')} disabled={saving}>
-                                    <XCircle size={18} />{saving ? 'Processing...' : 'Reject'}
+                                    <XCircle size={18} />{saving ? 'Processing...' : 'Redo'}
                                 </button>
-                                <button className="py-2.5 px-5 rounded-xl font-bold text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 hover:text-slate-900" onClick={() => handleSave('pending review')} disabled={saving}>
-                                    <Save size={18} />{saving ? 'Saving...' : 'Save Edits'}
-                                </button>
+                                {currentUserId === formData.created_by && (
+                                    <button className="py-2.5 px-5 rounded-xl font-bold text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 hover:text-slate-900" onClick={() => handleSave('pending review')} disabled={saving}>
+                                        <Save size={18} />{saving ? 'Saving...' : 'Save Edits'}
+                                    </button>
+                                )}
                                 <button className="py-2.5 px-5 rounded-xl font-bold text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 bg-emerald-500 text-white border-none shadow-[0_4px_12px_rgba(16,185,129,0.3)]" onClick={() => handleSave('approved')} disabled={saving}>
                                     <CheckCircle size={18} />{saving ? 'Processing...' : 'Approve'}
                                 </button>
                             </>
-                        ) : canEdit ? (
+                        ) : currentUserId === formData.created_by || !postId ? (
                             <>
                                 <button className="py-2.5 px-5 rounded-xl font-bold text-sm cursor-pointer flex items-center gap-2 transition-all duration-200 bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 hover:text-slate-900" onClick={() => handleSave('draft')} disabled={saving}>
                                     <Save size={18} />{saving ? 'Saving...' : 'Save Draft'}
