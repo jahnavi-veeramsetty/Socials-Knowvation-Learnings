@@ -44,6 +44,7 @@ const Calendar = () => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [deleteConfirmEventId, setDeleteConfirmEventId] = useState(null);
     const [showDrafts, setShowDrafts] = useState(false);
+    const [showPendingReview, setShowPendingReview] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -74,7 +75,7 @@ const Calendar = () => {
             .from('posts')
             .select('*, profiles:created_by(full_name, email)')
             .eq('organization_id', orgId)
-            .in('status', ['approved', 'draft']);
+            .in('status', ['approved', 'draft', 'pending review']);
 
         if (!error) {
             setPosts(data || []);
@@ -162,6 +163,7 @@ const Calendar = () => {
 
         return posts.filter(p => {
             if (p.status === 'draft' && !showDrafts) return false;
+            if (p.status === 'pending review' && !showPendingReview) return false;
 
             const matchesDate = p.scheduled_date === dateStr;
             const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -229,6 +231,14 @@ const Calendar = () => {
                         >
                             <div className={`w-2 h-2 rounded-full ${showDrafts ? 'bg-green-400' : 'bg-slate-300'}`}></div>
                             Drafts: {showDrafts ? 'ON' : 'OFF'}
+                        </button>
+
+                        <button
+                            onClick={() => setShowPendingReview(!showPendingReview)}
+                            className={`flex items-center gap-2 text-[12px] font-extrabold px-4 py-2 rounded-xl transition-all duration-200 border cursor-pointer ${showPendingReview ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}
+                        >
+                            <div className={`w-2 h-2 rounded-full ${showPendingReview ? 'bg-amber-400' : 'bg-slate-300'}`}></div>
+                            Pending Review: {showPendingReview ? 'ON' : 'OFF'}
                         </button>
 
                         {['KLM', 'KLS', 'KLC'].map(acc => {
