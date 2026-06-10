@@ -116,11 +116,11 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
     };
 
     return (
-        <div 
+        <div
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center animate-[fadeIn_0.2s_ease-out]"
             onClick={onClose}
         >
-            <div 
+            <div
                 className="bg-white w-[860px] max-w-[95vw] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.1)] animate-[slideUp_0.3s_ease-out] flex flex-col overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -326,5 +326,6 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
         </div>
     );
 };
+
 
 export default AddEventModal;

@@ -6,14 +6,17 @@ import Organizations from './pages/Organizations'
 import Dashboard from './pages/Dashboard'
 import Calendar from './pages/Calendar'
 import Posts from './pages/Posts'
+import Blogs from './pages/Blogs'
 import Quiz from './pages/Quiz'
 import Settings from './pages/Settings'
 import Team from './pages/Team'
 import CreatePost from './pages/CreatePost'
+import CreateBlog from './pages/CreateBlog'
 import Klm from './pages/socials/Klm'
 import Kls from './pages/socials/Kls'
 import Klc from './pages/socials/Klc'
 import DonePosting from './pages/DonePosting'
+import DoneBlogs from './pages/DoneBlogs'
 import SideBar from './components/layout/SideBar'
 import ScrollToTop from './components/layout/ScrollTotop'
 
@@ -82,6 +85,7 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'calendar', element: <Calendar /> },
       { path: 'posts', element: <Posts /> },
+      { path: 'blogs', element: <Blogs /> },
       { path: 'quiz', element: <Quiz /> },
       { path: 'team', element: <Team /> },
       { path: 'settings', element: <Settings /> },
@@ -89,11 +93,16 @@ const router = createBrowserRouter([
       { path: 'socials/kls', element: <Kls /> },
       { path: 'socials/klc', element: <Klc /> },
       { path: 'done-posting', element: <DonePosting /> },
+      { path: 'done-blogs', element: <DoneBlogs /> },
     ],
   },
   {
     path: '/org/:orgId/posts/create',
     element: <ProtectedRoute><CreatePost /></ProtectedRoute>,
+  },
+  {
+    path: '/org/:orgId/blogs/create',
+    element: <ProtectedRoute><CreateBlog /></ProtectedRoute>,
   },
 ]);
 

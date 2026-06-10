@@ -14,7 +14,8 @@ import {
     ChevronDown,
     ChevronUp,
     Hash,
-    PanelLeft
+    PanelLeft,
+    BookOpen
 } from 'lucide-react';
 
 const SideBar = () => {
@@ -39,6 +40,7 @@ const SideBar = () => {
         { name: 'Dashboard', path: `/org/${orgId}/dashboard`, icon: <LayoutDashboard size={22} className="shrink-0" /> },
         { name: 'Content Calendar', path: `/org/${orgId}/calendar`, icon: <CalendarDays size={22} className="shrink-0" /> },
         { name: 'Posts', path: `/org/${orgId}/posts`, icon: <Send size={22} className="shrink-0" /> },
+        { name: 'Blogs', path: `/org/${orgId}/blogs`, icon: <BookOpen size={22} className="shrink-0" /> },
         { name: 'Quiz Bank', path: `/org/${orgId}/quiz`, icon: <BrainCircuit size={22} className="shrink-0" /> },
         { name: 'Team', path: `/org/${orgId}/team`, icon: <Users size={22} className="shrink-0" /> },
         { name: 'Settings', path: `/org/${orgId}/settings`, icon: <Settings size={22} className="shrink-0" /> },
