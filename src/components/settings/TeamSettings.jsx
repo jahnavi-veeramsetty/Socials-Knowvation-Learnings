@@ -1,19 +1,30 @@
 import React from 'react';
-import { Users, UserPlus, Shield } from 'lucide-react';
+import { Users, UserPlus, Shield, Plus, Search } from 'lucide-react';
 
 const TeamSettings = ({ members }) => {
     return (
-        <div>
+        <div className="flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-end mb-6">
+            <div className="mb-6 flex justify-between items-start">
                 <div>
-                    <h2 className="text-brand text-xl font-extrabold m-0 mb-1">Team Members</h2>
-                    <p className="text-slate-500 text-sm m-0">Manage who has access to this organization.</p>
+                    <h2 className="text-slate-900 text-xl font-extrabold m-0 mb-1">Team Members</h2>
+                    <p className="text-slate-500 text-sm m-0">Manage team and permissions.</p>
                 </div>
-                <button className="bg-brand/[0.08] text-brand py-2 px-4 rounded-xl font-bold flex items-center gap-1.5 border-none cursor-pointer text-[13px] hover:bg-brand/15">
-                    <UserPlus size={16} />
-                    Invite
+                <button className="bg-brand text-white py-2.5 px-5 rounded-xl border-none font-bold text-sm flex items-center gap-2 cursor-pointer transition-all duration-200 hover:bg-brand-hover hover:-translate-y-0.5">
+                    <Plus size={18} />
+                    Invite Member
                 </button>
+            </div>
+
+            {/* Search */}
+            <div className="flex gap-4 mb-6">
+                <div className="flex items-center gap-3 bg-slate-50 py-2.5 px-4 rounded-xl border border-slate-200 flex-1 max-w-[400px]">
+                    <Search size={18} color="#94a3b8" />
+                    <input
+                        className="border-none outline-none w-full text-sm font-medium bg-transparent text-slate-900 placeholder:text-slate-500"
+                        placeholder="Search members..."
+                    />
+                </div>
             </div>
 
             {/* Member List */}

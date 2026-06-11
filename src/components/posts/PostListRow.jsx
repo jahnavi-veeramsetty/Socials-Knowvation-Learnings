@@ -50,7 +50,7 @@ const PostListRow = ({ post, onApprove, onRedo, userRole, currentUserId, orgId, 
     return (
         <div
             className={`bg-white rounded-2xl py-4 px-6 border border-slate-100 grid ${onSelect ? 'grid-cols-[30px_80px_1fr_100px_120px_100px_180px]' : 'grid-cols-[80px_1fr_100px_120px_100px_180px]'} items-center gap-5 transition-all duration-200 cursor-pointer hover:bg-slate-50 hover:border-brand`}
-            onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
+            onClick={() => window.open(`/org/${orgId}/${post.post_type || 'reel'}s/create?id=${post.id}`, '_blank')}
         >
             {onSelect && (
                 <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>

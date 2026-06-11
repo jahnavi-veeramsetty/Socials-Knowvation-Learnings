@@ -57,7 +57,7 @@ const WeeklySchedule = ({ weekDays, today, getPostsForDate, brandColors, orgId }
                                                 title={pastDay ? undefined : post.title}
                                                 onClick={(e) => {
                                                     if (!pastDay) {
-                                                        window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank');
+                                                        window.open(`/org/${orgId}/${post.post_type || 'reel'}s/create?id=${post.id}`, '_blank');
                                                     }
                                                 }}
                                             >

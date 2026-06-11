@@ -20,7 +20,7 @@ const NotificationsPanel = ({ isOpen, onClose, orgId, userId, onNotificationRead
             .from('notifications')
             .select(`
                 *,
-                post:post_id(title)
+                post:post_id(title, post_type)
             `)
             .eq('organization_id', orgId)
             .eq('user_id', userId)
@@ -63,8 +63,8 @@ const NotificationsPanel = ({ isOpen, onClose, orgId, userId, onNotificationRead
             await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
             if (onNotificationRead) onNotificationRead();
         }
-        onClose();
-        navigate(`/org/${orgId}/posts/create?id=${notif.post_id}`);
+        const postType = notif.post?.post_type || 'reel';
+        navigate(`/org/${orgId}/${postType}s/create?id=${notif.post_id}`);
     };
 
     return (

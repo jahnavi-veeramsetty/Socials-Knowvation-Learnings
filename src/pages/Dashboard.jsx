@@ -8,12 +8,14 @@ import { useState, useEffect } from 'react';
 import StatCards from '../components/dashboard/StatCards';
 import WeeklySchedule from '../components/dashboard/WeeklySchedule';
 import AccountOverview from '../components/dashboard/AccountOverview';
+import BlogOverview from '../components/dashboard/BlogOverview';
 import NotificationsPanel from '../components/dashboard/NotificationsPanel';
 
 const Dashboard = () => {
     const { orgId } = useParams();
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
+    const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [userId, setUserId] = useState(null);
@@ -38,6 +40,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (orgId) {
             fetchPosts();
+            fetchBlogs();
             fetchBrandSettings();
         }
     }, [orgId]);
@@ -123,6 +126,19 @@ const Dashboard = () => {
         setLoading(false);
     };
 
+    const fetchBlogs = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('blogs')
+            .select('*')
+            .eq('organization_id', orgId);
+
+        if (!error) {
+            setBlogs(data || []);
+        }
+        setLoading(false);
+    };
+
     // Week Range Calculation
     const getWeekRange = (date) => {
         const current = new Date(date);
@@ -156,13 +172,32 @@ const Dashboard = () => {
     };
 
     // Stats Calculation
-    const approvedPosts = posts.filter(p => p.status === 'approved').length;
+    const carousels = posts.filter(p => p.post_type === 'carousel');
+    const reels = posts.filter(p => p.post_type === 'reel');
 
-    const scheduledThisWeek = weekDays.reduce((total, date) => {
-        return total + getPostsForDate(date).length;
+    const approvedCarousels = carousels.filter(p => p.status === 'approved').length;
+    const pendingCarousels = carousels.filter(p => p.status === 'pending review').length;
+    const scheduledCarouselsThisWeek = weekDays.reduce((total, date) => {
+        return total + getPostsForDate(date).filter(p => p.post_type === 'carousel').length;
     }, 0);
 
-    const pendingReview = posts.filter(p => p.status === 'pending review').length;
+    const approvedReels = reels.filter(p => p.status === 'approved').length;
+    const pendingReels = reels.filter(p => p.status === 'pending review').length;
+    const scheduledReelsThisWeek = weekDays.reduce((total, date) => {
+        return total + getPostsForDate(date).filter(p => p.post_type === 'reel').length;
+    }, 0);
+
+    const approvedBlogs = blogs.filter(b => b.status === 'approved').length;
+    const pendingBlogs = blogs.filter(b => b.status === 'pending review').length;
+    
+    // Blogs scheduled this week
+    const scheduledBlogsThisWeek = weekDays.reduce((total, date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        return total + blogs.filter(b => b.scheduled_date === dateStr && b.status === 'approved').length;
+    }, 0);
 
     if (loading) {
         return (
@@ -190,9 +225,15 @@ const Dashboard = () => {
             </div>
 
             <StatCards
-                approvedPosts={approvedPosts}
-                scheduledThisWeek={scheduledThisWeek}
-                pendingReview={pendingReview}
+                approvedCarousels={approvedCarousels}
+                scheduledCarouselsThisWeek={scheduledCarouselsThisWeek}
+                pendingCarousels={pendingCarousels}
+                approvedReels={approvedReels}
+                scheduledReelsThisWeek={scheduledReelsThisWeek}
+                pendingReels={pendingReels}
+                approvedBlogs={approvedBlogs}
+                scheduledBlogsThisWeek={scheduledBlogsThisWeek}
+                pendingBlogs={pendingBlogs}
             />
 
             <WeeklySchedule
@@ -208,6 +249,12 @@ const Dashboard = () => {
                 brandColors={brandColors}
                 today={today}
                 weekRange={weekRange}
+                orgId={orgId}
+            />
+
+            <BlogOverview 
+                blogs={blogs}
+                today={today}
                 orgId={orgId}
             />
 

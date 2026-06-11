@@ -17,6 +17,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
     const PRESET_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#0ea5e9', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
 
     const isCreator = editEvent ? editEvent.created_by === userId : true;
+    const canEdit = isCreator || (editEvent ? editEvent.is_public : false);
 
     useEffect(() => {
         if (isOpen) {
@@ -54,24 +55,24 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
 
     const handleAddTodo = (e) => {
         e.preventDefault();
-        if (!todoInput.trim() || !isCreator) return;
+        if (!todoInput.trim() || !canEdit) return;
         setTodos([...todos, { id: crypto.randomUUID(), text: todoInput.trim(), completed: false }]);
         setTodoInput('');
     };
 
     const toggleTodo = (id) => {
-        if (!isCreator) return;
+        if (!canEdit) return;
         setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
     };
 
     const deleteTodo = (id) => {
-        if (!isCreator) return;
+        if (!canEdit) return;
         setTodos(todos.filter(t => t.id !== id));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!isCreator) return;
+        if (!canEdit) return;
         setError('');
 
         if (!title.trim() || !eventDate) {
@@ -127,7 +128,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50 shrink-0">
                     <h2 className="text-lg font-black text-slate-900 m-0">
-                        {!isCreator ? 'View Event' : editEvent ? 'Edit Event' : 'Add New Event'}
+                        {!canEdit ? 'View Event' : editEvent ? 'Edit Event' : 'Add New Event'}
                     </h2>
                     <button
                         onClick={onClose}
@@ -147,7 +148,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                     {error}
                                 </div>
                             )}
-                            {!isCreator && (
+                            {!canEdit && (
                                 <div className="bg-slate-100 text-slate-600 px-4 py-3 rounded-xl text-sm font-semibold border border-slate-200 flex items-center gap-2">
                                     <Lock size={16} /> You are viewing an event created by someone else. You cannot edit it.
                                 </div>
@@ -161,7 +162,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                         placeholder="e.g., Team Meeting, Campaign Launch..."
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        disabled={!isCreator}
+                                        disabled={!canEdit}
                                         className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-brand focus:bg-brand/5 bg-slate-50 outline-none text-slate-900 text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:bg-slate-100"
                                     />
                                 </div>
@@ -174,7 +175,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                             type="date"
                                             value={eventDate}
                                             onChange={(e) => setEventDate(e.target.value)}
-                                            disabled={!isCreator}
+                                            disabled={!canEdit}
                                             className="w-full pl-9 pr-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-brand focus:bg-brand/5 bg-slate-50 outline-none text-slate-900 text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:bg-slate-100"
                                         />
                                     </div>
@@ -188,10 +189,10 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                         <button
                                             key={c}
                                             type="button"
-                                            onClick={() => isCreator && setColor(c)}
-                                            className={`w-7 h-7 rounded-full transition-all duration-200 ${color === c ? 'scale-125 shadow-[0_4px_12px_rgba(0,0,0,0.2)] ring-2 ring-offset-2 ring-slate-800' : 'hover:scale-110 opacity-80 hover:opacity-100'} ${!isCreator ? 'cursor-default' : 'cursor-pointer'}`}
+                                            onClick={() => canEdit && setColor(c)}
+                                            className={`w-7 h-7 rounded-full transition-all duration-200 ${color === c ? 'scale-125 shadow-[0_4px_12px_rgba(0,0,0,0.2)] ring-2 ring-offset-2 ring-slate-800' : 'hover:scale-110 opacity-80 hover:opacity-100'} ${!canEdit ? 'cursor-default' : 'cursor-pointer'}`}
                                             style={{ backgroundColor: c }}
-                                            disabled={!isCreator}
+                                            disabled={!canEdit}
                                         />
                                     ))}
                                 </div>
@@ -205,7 +206,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                     placeholder="Add notes, agenda, or details here..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    disabled={!isCreator}
+                                    disabled={!canEdit}
                                     className="w-full px-3 py-2.5 min-h-[100px] h-full rounded-xl border-2 border-slate-200 focus:border-brand focus:bg-brand/5 bg-slate-50 outline-none text-slate-900 text-sm font-medium transition-all duration-200 resize-none disabled:opacity-60 disabled:bg-slate-100"
                                 />
                             </div>
@@ -224,7 +225,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                             <button
                                                 type="button"
                                                 onClick={() => toggleTodo(todo.id)}
-                                                disabled={!isCreator}
+                                                disabled={!canEdit}
                                                 className={`flex shrink-0 items-center justify-center border-none bg-transparent cursor-pointer p-0 disabled:cursor-default ${todo.completed ? 'text-brand' : 'text-slate-300 hover:text-slate-400'}`}
                                             >
                                                 {todo.completed ? <CheckSquare size={20} /> : <Square size={20} />}
@@ -232,7 +233,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                             <span className={`flex-1 font-medium text-[15px] ${todo.completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>
                                                 {todo.text}
                                             </span>
-                                            {isCreator && (
+                                            {canEdit && (
                                                 <button
                                                     type="button"
                                                     onClick={() => deleteTodo(todo.id)}
@@ -245,7 +246,7 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                     ))}
                                 </div>
 
-                                {isCreator && (
+                                {canEdit && (
                                     <div className="flex items-center gap-2 mt-1">
                                         <input
                                             type="text"
@@ -275,8 +276,8 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                 <label className="text-xs font-bold text-slate-700">Visibility</label>
                                 <div className="flex gap-2">
                                     <div
-                                        className={`flex-1 flex flex-col gap-1 p-3 rounded-xl border-2 transition-all duration-200 ${!isPublic ? 'border-brand bg-brand/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'} ${!isCreator ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
-                                        onClick={() => isCreator && setIsPublic(false)}
+                                        className={`flex-1 flex flex-col gap-1 p-3 rounded-xl border-2 transition-all duration-200 ${!isPublic ? 'border-brand bg-brand/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'} ${!canEdit ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
+                                        onClick={() => canEdit && setIsPublic(false)}
                                     >
                                         <div className={`flex items-center gap-2 font-bold text-sm ${!isPublic ? 'text-brand' : 'text-slate-600'}`}>
                                             <Lock size={14} /> Private
@@ -285,8 +286,8 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                     </div>
 
                                     <div
-                                        className={`flex-1 flex flex-col gap-1 p-3 rounded-xl border-2 transition-all duration-200 ${isPublic ? 'border-brand bg-brand/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'} ${!isCreator ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
-                                        onClick={() => isCreator && setIsPublic(true)}
+                                        className={`flex-1 flex flex-col gap-1 p-3 rounded-xl border-2 transition-all duration-200 ${isPublic ? 'border-brand bg-brand/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'} ${!canEdit ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
+                                        onClick={() => canEdit && setIsPublic(true)}
                                     >
                                         <div className={`flex items-center gap-2 font-bold text-sm ${isPublic ? 'text-brand' : 'text-slate-600'}`}>
                                             <Globe size={14} /> Public
@@ -308,9 +309,9 @@ const AddEventModal = ({ isOpen, onClose, orgId, userId, onEventAdded, editEvent
                                 onClick={onClose}
                                 className="px-5 py-2 rounded-xl font-bold text-sm text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
                             >
-                                {isCreator ? 'Cancel' : 'Close'}
+                                {canEdit ? 'Cancel' : 'Close'}
                             </button>
-                            {isCreator && (
+                            {canEdit && (
                                 <button
                                     type="submit"
                                     disabled={loading}

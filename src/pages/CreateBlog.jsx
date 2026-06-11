@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Save, Send, FileText, Link as LinkIcon, Info, Users, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import ImageUploadSection from '../components/posts/ImageUploadSection';
 import DeleteBlogModal from '../components/blogs/DeleteBlogModal';
+import CustomDatePicker from '../components/common/CustomDatePicker';
 import { supabase } from '../supabase/supabase';
 import Toast from '../components/common/Toast';
 
@@ -453,7 +454,7 @@ const CreateBlog = () => {
                         {(userRole === 'admin' || userRole === 'owner') ? (
                             <div className="flex flex-col gap-2">
                                 <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Scheduled Date (Admin Only)</label>
-                                <input type="date" className={sidebarInputClass} value={formData.scheduled_date} onChange={e => setFormData({ ...formData, scheduled_date: e.target.value })} />
+                                <CustomDatePicker className={`${sidebarInputClass} py-3 !border-slate-200`} value={formData.scheduled_date} onChange={val => setFormData({ ...formData, scheduled_date: val })} />
                             </div>
                         ) : (
                             <div className="text-[13px] text-slate-500 italic bg-slate-50 p-3 rounded-xl border border-slate-200">

@@ -83,22 +83,22 @@ const Team = () => {
     };
 
     return (
-        <div className="p-10 font-sans bg-light-bg min-h-screen text-slate-900">
+        <div className="flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="mb-6 flex justify-between items-start">
                 <div>
-                    <h1 className="text-slate-900 text-[32px] font-extrabold m-0">Team Members</h1>
-                    <p className="text-slate-500 mt-1 mb-0">Manage team and permissions</p>
+                    <h2 className="text-slate-900 text-xl font-extrabold m-0 mb-1">Team Members</h2>
+                    <p className="text-slate-500 text-sm m-0">Manage team and permissions.</p>
                 </div>
-                <button className="bg-brand text-white py-3 px-6 rounded-2xl border-none font-extrabold flex items-center gap-2.5 cursor-pointer transition-all duration-200 hover:bg-brand-hover hover:-translate-y-0.5">
-                    <Plus size={20} />
+                <button className="bg-brand text-white py-2.5 px-5 rounded-xl border-none font-bold text-sm flex items-center gap-2 cursor-pointer transition-all duration-200 hover:bg-brand-hover hover:-translate-y-0.5">
+                    <Plus size={18} />
                     Invite Member
                 </button>
             </div>
 
             {/* Search */}
-            <div className="flex gap-4 mb-8">
-                <div className="flex items-center gap-3 bg-light-card py-3 px-5 rounded-2xl border border-slate-200 flex-1 max-w-[400px]">
+            <div className="flex gap-4 mb-6">
+                <div className="flex items-center gap-3 bg-slate-50 py-2.5 px-4 rounded-xl border border-slate-200 flex-1 max-w-[400px]">
                     <Search size={18} color="#94a3b8" />
                     <input
                         className="border-none outline-none w-full text-sm font-medium bg-transparent text-slate-900 placeholder:text-slate-500"
@@ -112,9 +112,9 @@ const Team = () => {
             {loading ? (
                 <div className="text-center py-24">Loading...</div>
             ) : (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
                     {filteredMembers.map((member, idx) => (
-                        <div key={idx} className="bg-light-card rounded-[32px] p-8 relative shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 transition-all duration-300 text-center hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] hover:border-brand">
+                        <div key={idx} className="bg-white rounded-2xl p-6 relative shadow-sm border border-slate-200 transition-all duration-300 text-center hover:-translate-y-1 hover:shadow-md hover:border-brand">
 
                             {/* Menu */}
                             {currentUserRole === 'owner' && (
@@ -159,9 +159,9 @@ const Team = () => {
                                 {getInitials(member.profiles?.full_name)}
                             </div>
 
-                            <h3 className="text-2xl font-black text-slate-900 mb-2">{member.profiles?.full_name || 'New Member'}</h3>
+                            <h3 className="text-xl font-bold text-slate-900 mb-1">{member.profiles?.full_name || 'New Member'}</h3>
 
-                            <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-5">
+                            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-4">
                                 <Mail size={14} />
                                 {member.profiles?.email}
                             </div>

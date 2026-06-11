@@ -119,10 +119,10 @@ const DonePosting = () => {
                 </div>
                 <button
                     className="bg-white text-slate-700 py-3 px-6 rounded-2xl border border-slate-200 font-extrabold flex items-center gap-2.5 cursor-pointer transition-all duration-200 hover:bg-slate-50 hover:-translate-y-0.5"
-                    onClick={() => navigate(`/org/${orgId}/posts`)}
+                    onClick={() => navigate(`/org/${orgId}/dashboard`)}
                 >
                     <ArrowLeft size={20} />
-                    Back to Posts
+                    Back to Dashboard
                 </button>
             </div>
 

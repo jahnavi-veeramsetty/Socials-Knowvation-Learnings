@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useBlocker } from 'react-router-dom';
-import { Settings as SettingsIcon, Save, AlertCircle, User, Building, Palette, Grid, Activity } from 'lucide-react';
+import { Settings as SettingsIcon, Save, AlertCircle, User, Building, Palette, Grid, Activity, Users } from 'lucide-react';
 import { supabase } from '../supabase/supabase';
 import GeneralSettings from '../components/settings/GeneralSettings';
 import ProfileSettings from '../components/settings/ProfileSettings';
@@ -8,6 +8,7 @@ import BrandSettings from '../components/settings/BrandSettings';
 import TeamActivitySettings from '../components/settings/TeamActivitySettings';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
+import Team from '../pages/Team';
 
 const Settings = () => {
     const { orgId } = useParams();
@@ -168,6 +169,13 @@ const Settings = () => {
                     </button>
 
                     <button
+                        className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'team' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                        onClick={() => setActiveTab('team')}
+                    >
+                        <Users size={18} /> Team
+                    </button>
+
+                    <button
                         className={`flex items-center gap-3 py-3.5 px-4 rounded-xl border-none font-bold text-sm cursor-pointer transition-all duration-200 w-full text-left ${activeTab === 'brand' ? 'bg-brand text-white shadow-[0_4px_12px_rgba(0,43,114,0.2)]' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
                         onClick={() => setActiveTab('brand')}
                     >
@@ -199,6 +207,10 @@ const Settings = () => {
 
                     {activeTab === 'organization' && (
                         <GeneralSettings orgName={orgName} setOrgName={setOrgName} readOnly={!canEditOrg} />
+                    )}
+
+                    {activeTab === 'team' && (
+                        <Team />
                     )}
 
                     {activeTab === 'brand' && (

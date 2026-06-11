@@ -56,7 +56,7 @@ const PostCard = ({ post, onApprove, onRedo, userRole, currentUserId, orgId, isS
     return (
         <div
             className="bg-white rounded-[20px] p-6 border border-slate-200 shadow-sm transition-all duration-300 ease-in-out flex flex-col gap-4 cursor-pointer relative hover:-translate-y-1 hover:shadow-md hover:border-brand/30"
-            onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
+            onClick={() => window.open(`/org/${orgId}/${post.post_type || 'reel'}s/create?id=${post.id}`, '_blank')}
         >
             {/* Top */}
             <div className="flex justify-between items-start">

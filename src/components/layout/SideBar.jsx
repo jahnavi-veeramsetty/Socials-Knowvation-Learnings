@@ -5,23 +5,19 @@ import { supabase } from '../../supabase/supabase';
 import {
     LayoutDashboard,
     CalendarDays,
-    Send,
+    Images,
+    Film,
     BrainCircuit,
-    Users,
     Settings,
     LogOut,
-    Share2,
-    ChevronDown,
-    ChevronUp,
-    Hash,
     PanelLeft,
-    BookOpen
+    BookOpen,
+    CheckCircle
 } from 'lucide-react';
 
 const SideBar = () => {
     const { orgId } = useParams();
     const navigate = useNavigate();
-    const [socialsOpen, setSocialsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(() => {
         const saved = localStorage.getItem('sidebar_collapsed');
         return saved === 'true';
@@ -39,17 +35,11 @@ const SideBar = () => {
     const menuItems = [
         { name: 'Dashboard', path: `/org/${orgId}/dashboard`, icon: <LayoutDashboard size={22} className="shrink-0" /> },
         { name: 'Content Calendar', path: `/org/${orgId}/calendar`, icon: <CalendarDays size={22} className="shrink-0" /> },
-        { name: 'Posts', path: `/org/${orgId}/posts`, icon: <Send size={22} className="shrink-0" /> },
+        { name: 'Carousels', path: `/org/${orgId}/carousels`, icon: <Images size={22} className="shrink-0" /> },
+        { name: 'Reels', path: `/org/${orgId}/reels`, icon: <Film size={22} className="shrink-0" /> },
         { name: 'Blogs', path: `/org/${orgId}/blogs`, icon: <BookOpen size={22} className="shrink-0" /> },
-        { name: 'Quiz Bank', path: `/org/${orgId}/quiz`, icon: <BrainCircuit size={22} className="shrink-0" /> },
-        { name: 'Team', path: `/org/${orgId}/team`, icon: <Users size={22} className="shrink-0" /> },
+        { name: 'Published', path: `/org/${orgId}/published`, icon: <CheckCircle size={22} className="shrink-0" /> },
         { name: 'Settings', path: `/org/${orgId}/settings`, icon: <Settings size={22} className="shrink-0" /> },
-    ];
-
-    const socialItems = [
-        { name: 'KLM', path: `/org/${orgId}/socials/klm` },
-        { name: 'KLS', path: `/org/${orgId}/socials/kls` },
-        { name: 'KLC', path: `/org/${orgId}/socials/klc` },
     ];
 
     const navLinkClass = ({ isActive }) =>
@@ -97,50 +87,6 @@ const SideBar = () => {
                             )}
                         </li>
                     ))}
-
-                    {/* Socials Dropdown */}
-                    <li className="w-full relative group">
-                        <button
-                            className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl font-semibold text-sm transition-all duration-200 border-none cursor-pointer text-left whitespace-nowrap w-full ${socialsOpen ? 'bg-brand text-white shadow-[0_4px_15px_rgba(0,0,0,0.3)]' : 'bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-                                }`}
-                            onClick={() => setSocialsOpen(!socialsOpen)}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Share2 size={22} className="shrink-0" />
-                                <span
-                                    className={`transition-all duration-200 ${isCollapsed ? 'opacity-0 -translate-x-2.5 pointer-events-none w-0 overflow-hidden' : 'opacity-100'}`}
-                                >
-                                    Socials
-                                </span>
-                            </div>
-                            <div className={`transition-all duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none w-0 overflow-hidden' : 'opacity-100'}`}>
-                                {socialsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                            </div>
-                        </button>
-                        {isCollapsed && (
-                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
-                                Socials
-                            </div>
-                        )}
-
-                        {socialsOpen && !isCollapsed && (
-                            <div className="mt-1 flex flex-col gap-1 pl-4 animate-[slideDown_0.2s_ease-out]">
-                                {socialItems.map(item => (
-                                    <NavLink
-                                        key={item.name}
-                                        to={item.path}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-2.5 py-2.5 px-3.5 rounded-xl text-[13px] font-semibold no-underline transition-all duration-200 ${isActive ? 'text-slate-900 bg-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                            }`
-                                        }
-                                    >
-                                        <Hash size={18} className="shrink-0" />
-                                        <span>{item.name}</span>
-                                    </NavLink>
-                                ))}
-                            </div>
-                        )}
-                    </li>
                 </ul>
             </nav>
 

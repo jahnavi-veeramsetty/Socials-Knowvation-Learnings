@@ -7,7 +7,7 @@ import DeletePostModal from '../components/posts/DeletePostModal';
 import PostCard from '../components/posts/PostCard';
 import PostListRow from '../components/posts/PostListRow';
 
-const Posts = () => {
+const Posts = ({ postType }) => {
     const { orgId } = useParams();
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState('grid');
@@ -24,7 +24,6 @@ const Posts = () => {
     const [socialFilter, setSocialFilter] = useState('all');
     const [platformFilter, setPlatformFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [postTypeFilter, setPostTypeFilter] = useState('all');
     const [authorFilter, setAuthorFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('desc');
     const [selectedPosts, setSelectedPosts] = useState([]);
@@ -36,7 +35,7 @@ const Posts = () => {
         fetchUserRole(); 
         fetchBrandSettings();
     }, [orgId]);
-    useEffect(() => { if (userId) { fetchPosts(); } }, [userId, orgId, refreshTrigger]);
+    useEffect(() => { if (userId) { fetchPosts(); } }, [userId, orgId, refreshTrigger, postType]);
 
     useEffect(() => {
         const channel = new BroadcastChannel('posts_channel');
@@ -74,6 +73,7 @@ const Posts = () => {
             .from('posts')
             .select(`*, profiles:created_by (full_name, email)`)
             .eq('organization_id', orgId)
+            .eq('post_type', postType)
             .neq('status', 'published')
             .order('created_at', { ascending: false });
         if (userId) {
@@ -135,7 +135,7 @@ const Posts = () => {
             const { error: postErr } = await supabase.from('posts').delete().in('id', selectedPosts);
             if (postErr) throw new Error(`Post delete error: ${postErr.message}`);
 
-            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'delete', action_text: `bulk deleted ${selectedPosts.length} posts` }]);
+            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'delete', action_text: `bulk deleted ${selectedPosts.length} ${postType}s` }]);
             setSelectedPosts([]);
             setIsDeleteModalOpen(false);
             fetchPosts();
@@ -152,7 +152,7 @@ const Posts = () => {
             const { error } = await supabase.from('posts').update({ status: 'published' }).in('id', selectedPosts);
             if (error) throw error;
 
-            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'approve', action_text: `bulk published ${selectedPosts.length} posts` }]);
+            await supabase.from('activity_log').insert([{ organization_id: orgId, user_id: userId, action_type: 'approve', action_text: `bulk published ${selectedPosts.length} ${postType}s` }]);
             setSelectedPosts([]);
             fetchPosts();
         } catch (err) {
@@ -175,9 +175,8 @@ const Posts = () => {
         const matchesSocial = socialFilter === 'all' || post.social_account === socialFilter;
         const matchesPlatform = platformFilter === 'all' || post.platforms?.includes(platformFilter);
         const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
-        const matchesPostType = postTypeFilter === 'all' || post.post_type === postTypeFilter;
         const matchesAuthor = authorFilter === 'all' || post.created_by === authorFilter;
-        return matchesSearch && matchesSocial && matchesPlatform && matchesStatus && matchesPostType && matchesAuthor;
+        return matchesSearch && matchesSocial && matchesPlatform && matchesStatus && matchesAuthor;
     }).sort((a, b) => {
         const dateA = new Date(a.created_at).getTime();
         const dateB = new Date(b.created_at).getTime();
@@ -196,7 +195,7 @@ const Posts = () => {
                     <Search size={18} color="#94a3b8" />
                     <input
                         className="border-none outline-none w-full text-sm font-medium bg-transparent text-slate-900 placeholder:text-slate-500"
-                        placeholder="Search posts..."
+                        placeholder={`Search ${postType}s...`}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -204,10 +203,10 @@ const Posts = () => {
 
                 <button
                     className="bg-brand text-white py-3 px-6 rounded-2xl border-none font-extrabold flex items-center gap-2.5 cursor-pointer transition-all duration-200 hover:bg-brand-hover hover:-translate-y-0.5 whitespace-nowrap"
-                    onClick={() => window.open(`/org/${orgId}/posts/create`, '_blank')}
+                    onClick={() => window.open(`/org/${orgId}/${postType}s/create`, '_blank')}
                 >
                     <Plus size={20} />
-                    Create Post
+                    Create {postType === 'carousel' ? 'Carousel' : 'Reel'}
                 </button>
 
                 <div className="flex bg-light-card p-1 rounded-xl border border-slate-200">
@@ -219,47 +218,17 @@ const Posts = () => {
                         onClick={() => setViewMode('list')}><List size={18} /></button>
                 </div>
 
-                {selectedPosts.length > 0 ? (
-                    <div className="flex items-center gap-4 bg-brand/5 border border-brand/20 py-2.5 px-5 rounded-2xl animate-[fadeIn_0.2s_ease-out]">
-                        <div className="flex items-center gap-2">
-                            <button
-                                className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-brand/10 text-brand cursor-pointer border-none transition-colors"
-                                onClick={() => setSelectedPosts([])}
-                                title="Clear selection"
-                            >
-                                <X size={14} strokeWidth={3} />
-                            </button>
-                            <span className="text-sm font-bold text-brand">{selectedPosts.length} selected</span>
-                        </div>
-                        <div className="w-px h-5 bg-brand/20"></div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                className="flex items-center gap-2 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 py-1.5 px-3 rounded-lg cursor-pointer transition-colors border-none"
-                                onClick={() => setIsDeleteModalOpen(true)}
-                            >
-                                <Trash2 size={16} />
-                                Delete All
-                            </button>
-                            <button
-                                className="flex items-center gap-2 text-sm font-bold text-[#10b981] bg-[#10b981]/10 hover:bg-[#10b981]/20 py-1.5 px-3 rounded-lg cursor-pointer transition-colors border-none"
-                                onClick={handleBulkMoveToPosted}
-                            >
-                                <CheckCircle size={16} />
-                                Move to Posted
-                            </button>
-                        </div>
-                    </div>
-                ) : filteredPosts.length > 0 ? (
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
+                {filteredPosts.length > 0 && (
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 ml-2">
                         <input
                             type="checkbox"
-                            checked={selectedPosts.length === filteredPosts.length}
+                            checked={selectedPosts.length === filteredPosts.length && filteredPosts.length > 0}
                             onChange={toggleSelectAll}
                             className="w-[18px] h-[18px] cursor-pointer rounded border-[1.5px] border-slate-300 accent-brand"
                         />
-                        <label className="cursor-pointer" onClick={toggleSelectAll}>Select All</label>
+                        <label className="cursor-pointer select-none" onClick={toggleSelectAll}>Select All</label>
                     </div>
-                ) : null}
+                )}
 
                 </div>
 
@@ -310,20 +279,6 @@ const Posts = () => {
                     <div className="flex-1 min-w-[140px]">
                         <CustomSelect
                             className={selectClass}
-                            value={postTypeFilter}
-                            onChange={val => setPostTypeFilter(val)}
-                            options={[
-                                { value: 'all', label: 'All Types' },
-                                { value: 'reel', label: 'Reel' },
-                                { value: 'story', label: 'Story' },
-                                { value: 'carousel', label: 'Carousel' }
-                            ]}
-                        />
-                    </div>
-
-                    <div className="flex-1 min-w-[140px]">
-                        <CustomSelect
-                            className={selectClass}
                             value={authorFilter}
                             onChange={val => setAuthorFilter(val)}
                             options={[
@@ -345,18 +300,48 @@ const Posts = () => {
                         />
                     </div>
 
-                    <button
-                        className="bg-[#059669] hover:bg-[#047857] text-white text-[13px] font-extrabold py-3 px-5 rounded-2xl cursor-pointer transition-all duration-200 border-none shadow-[0_4px_12px_rgba(5,150,105,0.3)] hover:-translate-y-0.5 whitespace-nowrap shrink-0"
-                        onClick={() => navigate(`/org/${orgId}/done-posting`)}
-                    >
-                        Published
-                    </button>
+
                 </div>
             </div>
 
+            {/* Bulk Action Bar */}
+            {selectedPosts.length > 0 && (
+                <div className="flex items-center justify-between bg-brand/5 border border-brand/20 rounded-2xl p-4 mb-6 animate-[fadeIn_0.2s_ease-out]">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-white text-brand font-bold w-8 h-8 rounded-full flex items-center justify-center shadow-sm">
+                            {selectedPosts.length}
+                        </div>
+                        <span className="text-slate-700 font-bold">{postType === 'carousel' ? 'Carousels' : 'Reels'} Selected</span>
+                        <button
+                            className="text-sm font-semibold text-slate-500 hover:text-slate-700 underline underline-offset-2 ml-2 border-none bg-transparent cursor-pointer"
+                            onClick={() => setSelectedPosts([])}
+                        >
+                            Clear Selection
+                        </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <button
+                            className="flex items-center gap-2 text-sm font-bold text-red-600 bg-white hover:bg-red-50 border border-red-200 py-2 px-4 rounded-xl cursor-pointer transition-colors shadow-sm"
+                            onClick={() => setIsDeleteModalOpen(true)}
+                        >
+                            <Trash2 size={16} />
+                            Delete Selected
+                        </button>
+                        <button
+                            className="flex items-center gap-2 text-sm font-bold text-white bg-[#10b981] hover:bg-[#059669] py-2 px-4 rounded-xl cursor-pointer transition-all border-none shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:-translate-y-0.5"
+                            onClick={handleBulkMoveToPosted}
+                        >
+                            <CheckCircle size={16} />
+                            Publish Selected
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Posts */}
             {loading ? (
-                <div className="text-center py-24 text-brand font-bold">Loading posts...</div>
+                <div className="text-center py-24 text-brand font-bold">Loading {postType}s...</div>
             ) : filteredPosts.length > 0 ? (
                 <div className={viewMode === 'grid' ? 'grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6' : 'flex flex-col gap-3'}>
                     {filteredPosts.map(post =>
@@ -369,7 +354,7 @@ const Posts = () => {
                 </div>
             ) : (
                 <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                    <p className="text-slate-500 font-semibold">No posts found.</p>
+                    <p className="text-slate-500 font-semibold">No {postType}s found.</p>
                 </div>
             )}
 

@@ -405,7 +405,7 @@ const Calendar = () => {
                                                             borderColor: `${color}40`,
                                                             color: color
                                                         }}
-                                                        onClick={() => window.open(`/org/${orgId}/posts/create?id=${post.id}`, '_blank')}
+                                                        onClick={() => window.open(`/org/${orgId}/${post.post_type || 'reel'}s/create?id=${post.id}`, '_blank')}
                                                         title={post.title}
                                                     >
                                                         <span className="flex items-center justify-center opacity-80">{getIcon()}</span>

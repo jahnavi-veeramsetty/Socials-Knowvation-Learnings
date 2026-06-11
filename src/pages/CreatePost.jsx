@@ -18,10 +18,11 @@ import {
 import ImageUploadSection from '../components/posts/ImageUploadSection';
 import DeletePostModal from '../components/posts/DeletePostModal';
 import CustomSelect from '../components/common/CustomSelect';
+import CustomDatePicker from '../components/common/CustomDatePicker';
 import { supabase } from '../supabase/supabase';
 import Toast from '../components/common/Toast';
 
-const CreatePost = () => {
+const CreatePost = ({ defaultType }) => {
     const { orgId } = useParams();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -46,7 +47,7 @@ const CreatePost = () => {
 
     const [formData, setFormData] = useState({
         social_account: 'KLM',
-        post_type: 'reel',
+        post_type: defaultType || 'reel',
         platforms: [],
         scheduled_date: '',
         title: '',
@@ -101,7 +102,7 @@ const CreatePost = () => {
                 setFormData(prev => ({
                     ...prev,
                     social_account: data.social_account || 'KLM',
-                    post_type: data.post_type || 'reel',
+                    post_type: data.post_type || defaultType || 'reel',
                     platforms: data.platforms || [],
                     scheduled_date: data.scheduled_date || '',
                     title: data.title || '',
@@ -290,7 +291,7 @@ const CreatePost = () => {
             if (window.opener) {
                 window.close();
             } else {
-                navigate(`/org/${orgId}/posts`);
+                navigate(`/org/${orgId}/${formData.post_type}s`);
             }
         } catch (err) {
             console.error(err);
@@ -325,7 +326,7 @@ const CreatePost = () => {
                 action_text: `deleted "${formData.title || 'Untitled'}"` 
             }]);
             
-            navigate(`/org/${orgId}/posts`);
+            navigate(`/org/${orgId}/${formData.post_type}s`);
         } catch (err) {
             console.error(err);
             setNotification({ message: err.message || 'Error deleting post', type: 'error' });
@@ -343,12 +344,12 @@ const CreatePost = () => {
                 <button
                     className="flex items-center gap-2 text-slate-500 font-semibold text-sm cursor-pointer border-none bg-none transition-colors duration-200 hover:text-slate-900"
                     onClick={() => {
-                        if (window.history.length > 1) navigate(`/org/${orgId}/posts`);
+                        if (window.history.length > 1) navigate(`/org/${orgId}/${formData.post_type}s`);
                         else window.close();
                     }}
                 >
                     <ChevronLeft size={18} />
-                    Back to Posts
+                    Back to {formData.post_type === 'carousel' ? 'Carousels' : 'Reels'}
                 </button>
 
                 {(canEdit || (postStatus === 'pending review' && (userRole === 'admin' || userRole === 'owner'))) && (
@@ -511,20 +512,6 @@ const CreatePost = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Post Type</label>
-                            <CustomSelect 
-                                className={sidebarInputClass} 
-                                value={formData.post_type} 
-                                onChange={val => setFormData({ ...formData, post_type: val })}
-                                options={[
-                                    { value: 'reel', label: 'Reel' },
-                                    { value: 'story', label: 'Story' },
-                                    { value: 'carousel', label: 'Carousel' }
-                                ]}
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
                             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Target Platforms</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {['Instagram', 'LinkedIn', 'YouTube'].map(p => (
@@ -539,7 +526,7 @@ const CreatePost = () => {
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Scheduled Date</label>
-                            <input type="date" className={sidebarInputClass} value={formData.scheduled_date} onChange={e => setFormData({ ...formData, scheduled_date: e.target.value })} />
+                            <CustomDatePicker className={`${sidebarInputClass} py-3 !border-slate-200`} value={formData.scheduled_date} onChange={val => setFormData({ ...formData, scheduled_date: val })} />
                         </div>
                     </div>
 
