@@ -29,11 +29,13 @@ const CreateBlog = () => {
     const [mentionCursor, setMentionCursor] = useState(0);
     const notesRef = useRef(null);
     const backdropRef = useRef(null);
+    const [linkInput, setLinkInput] = useState('');
 
     const [formData, setFormData] = useState({
         title: '',
         content: '',
         cta: '',
+        reference_link: '',
         notes: '',
         scheduled_date: '',
         images: [],
@@ -84,6 +86,7 @@ const CreateBlog = () => {
                     title: data.title || '',
                     content: data.content || '',
                     cta: data.cta || '',
+                    reference_link: data.reference_link || '',
                     notes: data.notes || '',
                     scheduled_date: data.scheduled_date || '',
                     created_by: data.created_by,
@@ -178,6 +181,7 @@ const CreateBlog = () => {
                 title: formData.title,
                 content: formData.content,
                 cta: formData.cta,
+                reference_link: formData.reference_link,
                 notes: formData.notes,
                 scheduled_date: formData.scheduled_date || null,
                 status,
@@ -461,6 +465,77 @@ const CreateBlog = () => {
                                 {formData.scheduled_date ? `Scheduled for: ${formData.scheduled_date}` : "Date will be set by admin upon approval."}
                             </div>
                         )}
+                    </div>
+
+                    <div className="w-full h-px bg-slate-100"></div>
+
+                    <div className="flex flex-col gap-6">
+                        <h3 className="text-sm font-black text-slate-900 m-0 uppercase tracking-wide">Additional Details</h3>
+                        
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-[1px]">Reference Links</label>
+                            {!canEdit ? (
+                                <div className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-700 bg-slate-50 h-[80px] overflow-y-auto whitespace-pre-wrap break-words">
+                                    {formData.reference_link ? (
+                                        formData.reference_link.split(/\s+/).map((part, i) => {
+                                            if (part.match(/https?:\/\/[^\s]+/)) {
+                                                return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline font-medium break-all mr-2">{part}</a>;
+                                            }
+                                            return <span key={i} className="mr-2">{part}</span>;
+                                        })
+                                    ) : (
+                                        <span className="text-slate-400 italic">No reference links</span>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="w-full border border-slate-200 rounded-xl p-3 text-sm bg-slate-50 focus-within:bg-white focus-within:border-brand transition-colors h-[120px] overflow-y-auto flex flex-col gap-2">
+                                    {formData.reference_link && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {formData.reference_link.split(/\s+/).filter(Boolean).map((link, i) => (
+                                                <div key={i} className="flex items-center gap-1 bg-brand/5 border border-brand/20 text-brand px-2 py-1 rounded-md text-xs">
+                                                    <a href={link} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1 max-w-[150px] truncate" title={link}>
+                                                        <LinkIcon size={12} className="shrink-0" />
+                                                        <span className="truncate">{link}</span>
+                                                    </a>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newLinks = formData.reference_link.split(/\s+/).filter((_, idx) => idx !== i).join(' ');
+                                                            setFormData({ ...formData, reference_link: newLinks });
+                                                        }}
+                                                        className="ml-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors"
+                                                    >
+                                                        <XCircle size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <input 
+                                        type="text"
+                                        className="w-full bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400" 
+                                        placeholder={formData.reference_link ? "Add another link..." : "Type link & Enter..."}
+                                        value={linkInput}
+                                        onChange={e => setLinkInput(e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const trimmed = linkInput.trim();
+                                                if (trimmed) {
+                                                    let formattedLink = trimmed;
+                                                    if (!/^https?:\/\//i.test(trimmed) && trimmed.includes('.')) {
+                                                        formattedLink = `https://${trimmed}`;
+                                                    }
+                                                    const newLinks = formData.reference_link ? `${formData.reference_link} ${formattedLink}` : formattedLink;
+                                                    setFormData({ ...formData, reference_link: newLinks });
+                                                    setLinkInput('');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="w-full h-px bg-slate-100"></div>
